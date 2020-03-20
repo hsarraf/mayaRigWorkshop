@@ -1,0 +1,161 @@
+global proc reorientFunc() {
+
+
+string $jointSelected[] = `ls -sl -type joint`;
+int $mod = `checkBox -q -v hierarchyModeControl`;
+
+if ($mod == 0)
+  joint -e -oj xyz -secondaryAxisOrient yup -zso $jointSelected;
+else
+  joint -e -oj xyz -secondaryAxisOrient yup -ch -zso $jointSelected; 
+
+}
+
+
+global proc RLAFunc(string $axis) {
+
+string $jointSelected[] = `ls -sl -type joint`;
+float $angle = `floatFieldGrp -q -v1 angleControl`;
+
+ switch ($axis) {
+
+  case "x":
+    rotate -r -os ($angle) 0 0 ($jointSelected[0] + ".rotateAxis");
+  break;
+
+  case "y":
+    rotate -r -os 0 ($angle) 0 ($jointSelected[0] + ".rotateAxis");
+  break;
+
+  case "z":
+    rotate -r -os 0 0 ($angle) ($jointSelected[0] + ".rotateAxis");
+  break;
+
+ }
+
+}
+
+
+global proc selectHierarchyFunc() {
+
+  string $code = `textFieldGrp -q -tx characterCodeControl`; 
+ 
+  select ("s_M_root_J_" + $code); 
+  select -hi;
+  string $jList[] = `ls -sl -type joint`;
+  select $jList;
+
+}
+
+global proc selectInvertFunc() {
+
+  string $invertList[] = `ls -sl -type joint`;
+  selectHierarchyFunc;
+  select -d $invertList;
+
+}
+
+  
+global proc selectTipsFunc() {
+
+  string $code = `textFieldGrp -q -tx characterCodeControl`;
+  select ("*Tip*" + $code);
+
+}
+
+
+
+global proc generateProxyFunc() {
+
+string $answer = `confirmDialog -t "Note" -m "Make sure the character skeleton is named convensionally!\nContinue?"
+                        -b "Yes" -b "No" -db "Yes" -cb "No" -ds "No"`;
+
+if ($answer == "Yes") {
+
+string $code = `textFieldGrp -q -tx characterCodeControl`;
+
+getProxyFunc ("M_spine*_J_" + $code) 1;
+
+getProxyFunc ("M_neck*_J_" + $code) 0;
+
+getProxyFunc ("R_arm*_J_" + $code) 0;
+getProxyFunc ("L_arm*_J_" + $code) 0;
+
+getProxyFunc ("R_leg*_J_" + $code) 0;
+getProxyFunc ("L_leg*_J_" + $code) 0;
+
+//  Grouping the proxies.
+//string $code = `textFieldGrp -q -tx characterCodeControl`;
+//select ("proxy*" + $code);
+//group -n ("proxies_" + $code);
+select -cl;
+ 
+}
+
+else
+  error "Generating proxies falied!";
+
+}
+
+
+
+global proc getProxyFunc (string $firstJointName, int $flag) {
+
+select -r $firstJointName;
+select -hi;
+
+if ($flag) {
+select -d "M_neck*_J_1";
+select -d "R_arm*_J_1";
+select -d "L_arm*_J_1";
+select -d "R_leg*_J_1";
+select -d "L_leg*_J_1";
+}
+
+string $jointsList[] = `ls -sl -type joint`;
+int $jointsCount = `size $jointsList`;
+
+int $counter;
+for ($counter = 0 ; $counter < $jointsCount - 1 ; $counter++) {
+
+  vector $jointPose1 = `xform -q -t -ws $jointsList[$counter]`;
+  vector $jointPose2 = `xform -q -t -ws $jointsList[$counter + 1]`;
+
+  vector $distanceVector = $jointPose2 - $jointPose1;
+  float $distance = `mag $distanceVector`;
+
+  vector $jointAngle = `xform -q -ro -ws $jointsList[$counter]`;
+
+  string $proxyName = "proxy_" + $jointsList[$counter];
+
+  createCylinderFunc $distance $jointAngle $jointPose1 $proxyName $jointsList[$counter];
+
+  //print ($jointAngle + "\n");
+
+}
+
+}
+
+
+
+
+global proc createCylinderFunc (float $height, vector $angle, vector $position, string $proxyName, string $jointName) {
+
+float $radius = `floatFieldGrp -q -v1 radiusControl`;
+float $subdivisionsAxis = `floatFieldGrp -q -v1 subdivisionsAxisControl`;
+float $subdivisionsHeight = `floatFieldGrp -q -v1 subdivisionsHeightControl`;
+
+polyCylinder -r $radius -h $height -sx $subdivisionsAxis -sy $subdivisionsHeight -sz 1 -n $proxyName;
+move -r 0 (-$height / 2) 0 $proxyName;
+move -r 0 ($height / 2) 0 ($proxyName + ".scalePivot") ($proxyName + ".rotatePivot");
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+
+rotate -r 0 0 90;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+rotate -r ($angle.x) ($angle.y) ($angle.z);
+
+move -r ($position.x) ($position.y) ($position.z);
+
+parent $proxyName $jointName;
+
+}

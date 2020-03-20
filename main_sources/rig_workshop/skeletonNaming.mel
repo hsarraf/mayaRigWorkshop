@@ -1,0 +1,137 @@
+
+global proc renameFunc(string $prefix) {
+
+  global int $sn_mod;
+  if ($sn_mod != 1) 
+    $prefix = ("s_" + $prefix);
+
+  select -hi;
+  string $list[] = `ls -sl -type joint`;
+  int $listCount = `size $list`;
+  int $counter;
+ 
+  string $code = `textFieldGrp -q -tx characterCodeControl`;
+
+  for ($counter = 0 ; $counter < $listCount ; $counter++) {
+
+    string $oldName = $list[$counter];
+    rename $oldName ($prefix + $counter + "_J_" + $code);
+
+  }
+  rename $list[$counter - 1] ($prefix + "Tip_J_" + $code);
+
+  select -cl;
+
+}
+
+
+global proc rigToSkinFunc() {
+
+  select -hi;
+  string $list[] = `ls -sl -type joint`;
+  int $listCount = `size $list`;
+  string $oldName;
+
+  for ($oldName in $list) {
+    string $newName = ("s_" + $oldName);
+    rename $oldName $newName;
+
+  }
+
+select -cl;
+
+}
+
+
+global proc skinToRigFunc() {
+
+  select -hi;
+  string $list[] = `ls -sl -type joint`;
+  int $listCount = `size $list`;
+  string $oldName;
+
+  string $oldNameApart[];
+
+  for ($oldName in $list) {
+    int $count = `tokenize $oldName "_" $oldNameApart`;
+    if ($count != 5) 
+      error "Please bilakh!!!";
+    else {
+      string $newName = ($oldNameApart[1] + "_" + $oldNameApart[2] + "_" + $oldNameApart[3] + "_" + $oldNameApart[4]);
+      rename $oldName $newName;
+    }
+
+  }
+
+select -cl;
+
+}
+
+
+
+
+
+global proc sn_subMembersFunc (string $LR) {
+	
+  global string $iconImagesPath;
+
+	if (`window -exists sn_subMembersWin`)
+		deleteUI sn_subMembersWin;
+	window -t "subMembers Window" -wh 100 100 -tlc 10 10 sn_subMembersWin;
+	rowColumnLayout -nc 5 -cw 1 60 -cw 2 60 -cw 3 60 -cw 4 60 -cw 5 60;
+	
+      global string $pinky;
+        $pinky = $LR + "Pinky";
+      global string $ring;
+        $ring = $LR + "Ring";
+      global string $middle;
+        $middle = $LR + "Middle";
+      global string $index;
+        $index = $LR + "Index";
+      global string $thumb;
+        $thumb = $LR + "Thumb";
+      global string $palm;
+        $palm = $LR;      
+
+      symbolButton -w 40 -h 30 -i ($iconImagesPath + "pinky.bmp") -c "global string $pinky; renameFunc $pinky;"; 
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "ring.bmp") -c "global string $ring; renameFunc $ring;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "middle.bmp") -c "global string $middle; renameFunc $middle;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "index.bmp") -c "global string $index; renameFunc $index;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "thumb.bmp") -c "global string $thumb; renameFunc $thumb;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "palm.bmp") -c "global string $palm; renameFunc $palm;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp"); 
+	  
+
+	 
+	 showWindow sn_subMembersWin;
+	 
+}
+
+global proc rootNameFunc() {
+	
+	global int $sn_mod;
+
+      string $code = `textFieldGrp -q -tx characterCodeControl`;
+
+	if ($sn_mod == 1)
+		rename ("M_root_J_" + $code);
+	else
+		rename ("s_M_root_J_" + $code);
+
+}
+
+global proc pelvisNameFunc() {
+	
+	global int $sn_mod;
+
+      string $code = `textFieldGrp -q -tx characterCodeControl`;
+
+	if ($sn_mod == 1)
+		rename ("M_pelvis_J_" + $code);
+	else
+		rename ("s_M_pelvis_J_" + $code);
+
+}

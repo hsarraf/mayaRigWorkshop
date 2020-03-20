@@ -1,0 +1,87 @@
+
+global proc hs_subMembersFunc (string $prefix) {
+
+  global string $iconImagesPath;
+	
+       string $code = `textFieldGrp -q -tx characterCodeControl`;
+
+	  global string $hs_pinky;
+          $hs_pinky = ($prefix + "Pinky0_J_" + $code);
+	  global string $hs_ring;
+          $hs_ring = ($prefix + "Ring0_J_" + $code);
+	  global string $hs_middle;
+          $hs_middle = ($prefix + "Middle0_J_" + $code);
+	  global string $hs_index;
+          $hs_index = ($prefix + "Index0_J_" + $code);
+	  global string $hs_thumb;
+          $hs_thumb = ($prefix + "Thumb0_J_" + $code);
+	  global string $hs_palm;
+          $hs_palm = ($prefix + "0_J_" + $code);
+
+	if (`window -exists hs_subMembersWin`)
+		deleteUI hs_subMembersWin;
+	window -t "SubMembers Window" -wh 100 100 -tlc 10 10 hs_subMembersWin;
+	rowColumnLayout -nc 5 -cw 1 60 -cw 2 60 -cw 3 60 -cw 4 60 -cw 5 60;
+	  
+	symbolButton -w 40 -h 30 -i ($iconImagesPath + "pinky.bmp") -c "global string $hs_pinky; hs_generateFunc $hs_pinky;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "ring.bmp") -c "global string $hs_ring; hs_generateFunc $hs_ring;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "middle.bmp") -c "global string $hs_middle; hs_generateFunc $hs_middle;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "index.bmp") -c "global string $hs_index; hs_generateFunc $hs_index;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "thumb.bmp") -c "global string $hs_thumb; hs_generateFunc $hs_thumb;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "palm.bmp") -c "global string $hs_palm; hs_generateFunc $hs_palm;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp"); 
+	  
+
+	 
+	 showWindow hs_subMembersWin;
+	 
+}
+
+
+global proc hs_generateFunc(string $jointName) {
+	
+	global int $hs_mod;
+
+//  Creating the selection list.
+
+	select $jointName;
+	select -hi;
+
+string $jointsList[] = `ls -sl -type joint`;
+string $jointName;
+
+//string $connectionsList[];
+string $connectionName;
+
+int $counter = 0;
+
+select -cl;
+string $skinClustersList[] = `ls -sl`;
+//print ($jointsList);
+
+//  Filling the skinClusters list.
+for ($jointName in $jointsList) {
+	
+	string $connectionsList[] = `listConnections -s 0 -d 1 $jointName`;
+	//print ($jointName + "\n");
+	//print ($connectionsList);
+	
+	for ($connectionName in $connectionsList) 
+		if ($connectionName == "skinCluster1") {
+			$skinClustersList[$counter] = $jointName;
+			$counter++;
+			break;
+	}
+	
+}
+
+//print ($skinClustersList);
+
+string $skinClusterName;
+for ($skinClusterName in $skinClustersList)
+	setAttr ($skinClusterName + ".liw") ($hs_mod);
+
+} // end func <hs_generateFunc>

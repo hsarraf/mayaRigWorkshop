@@ -1,0 +1,2 @@
+All plugin sources <.cpp files> are in the folowing path:
+"D:\hadi`s workshop\API_programming"

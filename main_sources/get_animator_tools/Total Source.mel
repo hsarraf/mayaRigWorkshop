@@ -1,0 +1,1694 @@
+//---------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------------------------------------------------------------------//
+//	SCRIPT:	Animator Tools.mel	
+//	AUTHOR:	Hadi Sarraf   _   <didarvfx co.>
+//
+//	DATE:	       7 / May / 2006   _    1385 / 2 / 17 	
+//
+//     USAGE:        Accessing every tools the animator needed.
+//
+//                   This script is divided to four parts :
+//                       1. Selection Sketch : You can select every icon determined for you 
+//                                               on the character through a sketch not the scene.
+//                          . This selection mode can be sensitive to lunch the related window included 
+//                              the properties for the selected icon. 
+//                              This mode can be switched on or off. 
+//                       2. Motion Connections : This is a strategy to simplify the character setup system 
+//                                                 by dividing the `rig` and `skin` tasks to two hierarchies.
+//                       3. Quick Access : Accessing every animator needs quickly.
+//                       4. Face Tools : Descriped later. 
+//                                                   
+//---------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------------------------------------------------------------------//     
+
+
+
+
+
+
+string $ss_iconImagesPath = "C:/Documents and Settings/All Users/Documents/sctipts_IconImages/selectionSketchImages/";
+
+if (`window -ex animatorToolsWin`)
+  deleteUI animatorToolsWin;
+
+window -t "Animator Tools" animatorToolsWin;
+scrollLayout;
+
+columnLayout -adj 1;
+
+textFieldGrp -l "Character Code" -tx 1 -adj 1 -cal 1 left ss_characterCodeControl;
+text -l "Interactive Selection" -align left -fn boldLabelFont;
+button -l Off -c "scriptJob -ka;" -bgc .7 .7 .7;
+button -l On -c "scriptJob -ka; scriptJob -ct SomethingSelected UIsLuncherFunc;" -bgc .85 .85 .85;
+
+
+  frameLayout -l "Selection Sketch" -cll 1 -bs "in";
+    rowColumnLayout -nc 5 -cw 1 60 -cw 2 60 -cw 3 60 -cw 4 60 -cw 5 60;
+
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "head.bmp") -c "selectFunc head";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "R_arm.bmp") -c "selectFunc R_arm";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "upper.bmp") -c "selectFunc upper";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "L_arm.bmp") -c "selectFunc L_arm";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp"); 
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "lower.bmp") -c "selectFunc lower";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "R_leg.bmp") -c "selectFunc R_leg";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "L_leg.bmp") -c "selectFunc L_leg";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+
+    setParent..;
+  setParent..;
+
+
+  frameLayout -l "Quick Access" -cll 1 -cl 0 -bs "in";
+    columnLayout -adj 1;
+
+    rowLayout -nc 4 -cw 1 50 -cw 2 50 -cw 3 50 -cw 4 50;
+
+      toolCollection;
+      toolButton -t "selectSuperContext" -ti1 "selectSuperContext" "aselect.xpm";
+      toolButton -t "moveSuperContext" -ti1 "moveSuperContext" "move_M.xpm";
+      toolButton -t "RotateSuperContext" -ti1 "RotateSuperContext" "Rotate_M.xpm";
+      toolButton -t "scaleSuperContext" -ti1 "scaleSuperContext" "scale_M.xpm";
+
+    setParent..;
+
+      separator -h 10;
+
+      button -l "Graph Editor" -bgc 1 .8 .6 -c GraphEditor;   
+      button -l "Dope Sheet" -bgc 1 .8 .6 -c DopeSheetEditor;       
+
+//      button -l "Outliner" -bgc .9 .7 .5 -c OutlinerWindow;  
+//      button -l "Hypergraph" -bgc .9 .7 .5 -c HypergraphWindow;  
+
+    setParent..; 
+  setParent..;
+
+
+frameLayout -l "Motion Connections" -cll 1 -cl 1;
+  rowColumnLayout -nc 5 -cw 1 60 -cw 2 60 -cw 3 60 -cw 4 60 -cw 5 60;
+
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "head.bmp") -c "generateFunc M_neck0_J";
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "R_arm.bmp") -c "generateFunc R_arm0_J";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "upper.bmp") -c "generateFunc M_spine0_J";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "L_arm.bmp") -c "generateFunc L_arm0_J";
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "root.bmp") -c "generateFunc M_root_J";
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "R_leg.bmp") -c "generateFunc R_leg0_J";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "lower.bmp") -c "generateFunc M_pelvis_J";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "L_leg.bmp") -c "generateFunc L_leg0_J";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+
+
+  setParent..;
+setParent..;
+
+
+
+frameLayout -l "Face Tools" -cll 1 -cl 1;
+
+columnLayout -adj 1;
+
+button -l "1d" -bgc .6 .6 1 -c controlWin_1d;
+button -l "2d" -bgc 1 .6 .6 -c controlWin_2d;
+
+separator -h 20;
+
+textFieldGrp -adj 1 -cc lunchListFunc lunchListControl;
+text -l "Write a pose name or a number represented for\nGhool  ->  1\nEjdeha  ->  2\nKhosro  ->  3";
+
+
+setParent..;
+
+
+
+setParent..;
+
+
+showWindow animatorToolsWin;
+
+
+
+
+//-------  Selection Sketch and luncher <start>  ----------------------------------------------------------
+
+
+
+//  Selection based on Icon name. (Through the ss window)
+proc selectFunc(string $prefix) {
+
+  string $ss_code = `textFieldGrp -q -tx ss_characterCodeControl`;
+  string $iconName = $prefix + "_" + $ss_code;
+
+  select -cl;
+  select $iconName;
+
+}
+
+
+
+//  Lunching the related window as soon as the icon selected.
+proc UIsLuncherFunc() {
+
+string $selectedList[] = `ls -sl`;
+string $selected = $selectedList[0];
+
+switch ($selected) {
+
+case "head_1":
+  head_1_UIFunc;
+break;
+
+case "upper_1":
+  upper_1_UIFunc;
+break;
+
+case "lower_1":
+  lower_1_UIFunc;
+break;
+
+}
+
+}
+
+//----------  Icon properties window <start> -----------
+
+
+proc head_1_UIFunc() {
+
+if (`window -ex headToolsWin`)
+  deleteUI headToolsWin;
+
+window -t "Head Tools" headToolsWin;
+columnLayout -adj 1;
+
+button -l head_1;
+
+showWindow headToolsWin;
+
+}
+
+//----------  Icon properties window <end> -----------
+
+
+
+//-------  Selection Sketch and luncher <end>  ----------------------------------------------------------
+
+
+
+
+
+
+//-------  Motion Connections <start>  ----------------------------------------------------------
+
+proc mc_generateFunc(string $jointName) {
+
+global int $mc_mod;
+string $code = `textFieldGrp -q -tx ss_characterCodeControl`;
+
+if ($mc_mod == 1) {
+  	  
+	  select -cl;
+        $jointName = $jointName + "_" + $code;
+	  select -r $jointName;
+	  select -add ("s_" + $jointName);
+	  
+	  select -hi;
+	  
+	  string $totalList[] = `ls -sl -type joint`;
+	  int $totalListCount = `size $totalList`;
+	  string $sourceList[];
+	  string $targetList[];
+	  
+	  //  Testing the two hirerarchies to be equvalent.
+
+	  if ( ($totalListCount % 2) != 0 ) {
+  		  confirmDialog -t "A Fatal Error" -m "The two hierarchies are not equivalent!\nInsert OK and immediately call the rigger." -b "OK";
+	      error "The two hierarchies are not equivalent";
+	  }
+	  
+	  int $totalListCountHalf = $totalListCount / 2;
+
+//  Filling the two lists(source & target).
+    int $counter;
+	for ($counter = 0 ; $counter < $totalListCountHalf ; $counter++) {
+		
+		connectAttr ($totalList[$counter] + ".t") ($totalList[$counter + $totalListCountHalf] + ".t");
+		connectAttr ($totalList[$counter] + ".r") ($totalList[$counter + $totalListCountHalf] + ".r");
+		connectAttr ($totalList[$counter] + ".s") ($totalList[$counter + $totalListCountHalf] + ".s");
+		
+  		
+	}
+  }  //end if <mod>
+
+  else {
+	  
+	  select -cl;
+	  select -r $jointName;
+	  select -add ("s_" + $jointName);
+	  
+	  select -hi;
+	  
+	  string $totalList[] = `ls -sl -type joint`;
+	  int $totalListCount = `size $totalList`;
+	  string $sourceList[];
+	  string $targetList[];
+	  
+	  //  Testing the two hirerarchies to be equvalent.
+
+	  if ( ($totalListCount % 2) != 0 ) {
+  		  confirmDialog -t "An Error" -m "The two hierarchies are not equivalent!\nInsert OK and select properly." -b "OK";
+	      error "The two hierarchies are not equivalent";
+	  }
+	  
+	  int $totalListCountHalf = $totalListCount / 2;
+
+//  Filling the two lists(source & target).
+    int $counter;
+	for ($counter = 0 ; $counter < $totalListCountHalf ; $counter++) {
+		
+		disconnectAttr ($totalList[$counter] + ".t") ($totalList[$counter + $totalListCountHalf] + ".t");
+		disconnectAttr ($totalList[$counter] + ".r") ($totalList[$counter + $totalListCountHalf] + ".r");
+		disconnectAttr ($totalList[$counter] + ".s") ($totalList[$counter + $totalListCountHalf] + ".s");
+		
+  		
+	}
+	
+  }  //end else <mod>
+
+}  //end func <generateFunc>
+
+//-------  Motion Connections <end>  ----------------------------------------------------------
+
+
+
+
+
+
+
+
+
+//---------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------------------------------------------------------------------//
+//	SCRIPT:	Facial Tools.mel	
+//	AUTHOR:	Hadi Sarraf   _   <didarvfx co.>
+//
+//	DATE:	       23 / April / 2006   _    1385 / 2 / 3 	
+//
+//     USAGE:        Every thing about any facial morph is done through this script.
+//
+//                     This script is divided to four parts :
+//                     1. The main window : You can load `1d or 2d control windows` 
+//                        or load the `list of poses`.
+//                     2. 1d control window (controlWin_1d) : Editing every thing related to 1d controls.
+//                     3. 2d control window (controlWin_2d) : Editing every thing related to 2d controls.
+//                     4. Poses list window (posesList) : List every poses include the related character file.
+//                        You can use this list to load your poses into your scene quickly.
+//
+//---------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------------------------------------------------------------------//    
+
+
+//-------  Face Tools (lunch list) <start>  ----------------------------------------------------------
+
+global string $path_1 = "D:/poses_source/Ghool/";
+global string $path_2 = "D:/poses_source/Ejdeha/";
+global string $path_3 = "D:/poses_source/Khosro/";
+
+
+proc lunchListFunc() {
+
+global string $path_1;
+global string $path_2;
+global string $path_3;
+
+string $input = `textFieldGrp -q -tx lunchListControl`;
+
+switch ($input) {
+
+//  Code test.
+
+  case "1":
+    listPosesFunc "Ghool" $path_1;
+  break;
+
+  case "2":
+    listPosesFunc "Ejdeha" $path_2;
+  break;
+
+  case "3":
+    listPosesFunc "Khosro" $path_3;
+  break;
+
+  default:
+    error "Please bilakh!!!";  
+  break;
+
+}
+
+}
+
+
+
+
+
+proc listPosesFunc (string $characterName, string $path) {
+
+global string $g_path;
+$g_path = $path;
+
+global string $poseFilesList[];
+$poseFilesList = `getFileList -fld $path -fs "*.mb"`;
+string $poseFile;
+int $poseFilesCount = `size $poseFilesList`;
+
+string $winTitle = $characterName + " Poses List";
+string $winName = $characterName + "PosesListWin";
+
+//  Lunching the window.
+if (`window -ex listWin`)
+  deleteUI listWin;
+
+window -t $winTitle listWin;
+scrollLayout;// -bgc .2 .4 .8;
+
+columnLayout -adj 1;// -bgc .2 .4 .8; 
+
+frameLayout -l List -cl 0 -cll 0 -bs "etchedOut";
+columnLayout -adj 1;
+
+for ($poseFile in $poseFilesList) {
+  string $pose = poseFile2PoseFunc ($poseFile);
+  checkBox -l $pose ($pose + "CbControl");
+}
+setParent..;
+setParent..;
+
+
+frameLayout -l Generation -cl 0 -cll 0 -bs "etchedOut";
+columnLayout -adj 1;
+  button -l "Generate Pose" -bgc 1 .15 .15 -c "global string $g_path; generatePoseFunc $g_path";
+  checkBox -l "Prepare Pose" preparePoseControl;
+setParent..;
+setParent..;
+
+
+showWindow listWin;
+
+} // end func <listPosesFunc>
+
+
+
+
+
+
+
+proc generatePoseFunc (string $path) {
+
+
+global string $poseFilesList[];
+//int $poseFilesListCount = `size $poseFilesList`;
+string $poseFile;
+
+int $counter = 0;
+
+for ($poseFile in $poseFilesList) {
+
+  string $pose = poseFile2PoseFunc ($poseFile);
+  if (`checkBox -q -v ($pose + "CbControl")`)
+    $counter++;
+
+}
+
+int $onCount = $counter;
+print ($onCount);
+
+
+if (`checkBox -q -v preparePoseControl`) 
+  switch ($onCount) {
+
+  case 1:
+    string $posesList[] = getPoseFunc ($path);
+
+    select -r $posesList;
+
+//    prepareSceneFunc;
+    set1dControlFunc;
+    prepare1dControlFunc;
+    delete $posesList;
+    select -r ($posesList[0] + "_1dControl");
+  break;
+  
+  case 2:
+    string $posesList[] = getPoseFunc ($path);
+
+    select -r $posesList;
+
+//    prepareSceneFunc;
+    set2dControlFunc;
+    prepare2dControlFunc;
+    delete $posesList;
+    
+    string $poseApart[];
+    tokenize $posesList[0] "_" $poseApart;
+    select -r ($poseApart[0] + "_" + $posesList[1] + "_2dControl");
+//    select -r ($posesList[0] + "_2dControl");
+//    select -r ($posesList[1] + "_2dControl");
+  break;
+
+  }
+    
+  
+
+
+else
+  getPoseFunc $path;     
+
+
+} // end func <generatePoseFunc>
+
+
+
+
+
+
+proc string[] getPoseFunc (string $path) {
+
+global string $poseFilesList[];
+string $poseFile;
+
+string $cbOnList[];
+int $counter = 0;
+string $pose;
+
+//select -cl;
+for ($poseFile in $poseFilesList) {
+  
+  $pose = poseFile2PoseFunc ($poseFile);
+  if (`checkBox -q -v ($pose + "CbControl")`) {
+    $cbOnList[$counter] = $pose;
+    $counter++;
+    file -import -type "mayaBinary" -pr ($path + $pose + ".mb");
+
+  } 
+
+}
+
+return $cbOnList;
+
+} // end func <getPoseFunc>
+
+
+
+
+proc string poseFile2PoseFunc (string $poseFile) {
+
+string $poseFileApart[];
+tokenize $poseFile "." $poseFileApart;
+
+string $pose = $poseFileApart[0];
+return $pose;
+
+}
+
+//-------  Face Tools (lunch list) <end>  ----------------------------------------------------------
+
+
+
+
+//-------  Face Tools (control 1d) <start>  ----------------------------------------------------------
+
+//  Global variables.
+global string $sourceList[];
+global string $prefixName;
+
+
+//  Lunching the controlWin_1d.
+global proc controlWin_1d() {
+
+
+//  Lunching the windows <controlWin_1d> and <controlWin_2d>.
+if (`window -ex controlWin_1d`) 
+  deleteUI controlWin_1d;
+
+if (`window -ex controlWin_2d`) 
+  deleteUI controlWin_2d;
+
+//  Designing the window <controlWin_1d>.
+window -t "1d Contorl Window" controlWin_1d;
+scrollLayout;
+
+columnLayout -adj 1;
+
+frameLayout -l "Preparations" -cll 1 -cl 0 -bs "in";
+columnLayout -adj 1;
+
+text -l "Prepare Scene" -fn boldLabelFont;
+button -l "Prepare Scene" -c prepareSceneFunc;
+
+separator -h 20;
+
+text -l "Add Controls" -fn boldLabelFont;
+button -l "Set Control" -c set1dControlFunc;
+button -l "Prepare Control" -c prepare1dControlFunc;
+button -l "emphasize Control" -c "emphasize1dControlFunc 1.5";
+
+separator -h 20;
+
+text -l "Tweaking" -fn boldLabelFont;
+intFieldGrp -l "View ID" -v1 1 -cc setViewFunc viewIdControl;
+button -l "Greatest index" -c getGreatestIndexFunc;
+textField -en 0 -tx "Hit button to get the greatest index" -h 25 getGreatestIndexControl;
+
+setParent..;
+setParent..;
+
+
+
+
+frameLayout -l "Selection & Deleting" -cll 1 -cl 1 -bs "in";
+columnLayout -adj 1;
+
+separator -h 20;
+
+text -l "Select & Delete Controls" -fn boldLabelFont;
+button -l "Select Last Control" -c "selectDeleteLast1dControlFunc select";
+button -l "Delete Last Control" -c "selectDeleteLast1dControlFunc delete";
+button -l "Select Per Slider" -c "selectDeletePerSlider1dFunc select";
+button -l "Delete Per Slider" -c "selectDeletePerSlider1dFunc delete";
+
+setParent..;
+setParent..;
+
+
+
+frameLayout -l "Connections" -cll 1 -cl 1 -bs "in";
+columnLayout -adj 1;
+
+separator -h 20;
+
+text -l "Simple Connection" -fn boldLabelFont;
+button -l "Connect" -c "connectDisconnect1dFunc connect";
+button -l "Disconnect" -c "connectDisconnect1dFunc disconnect";
+
+separator -h 20;
+
+text -l "Advanced Connection" -fn boldLabelFont;
+floatFieldGrp -l "Index Range" -v1 1 -adj 1 -cal 1 left indexRangeControl; 
+floatFieldGrp -l "Initial Range" -adj 1 -cal 1 left initialRangeControl;
+button -l "Advanced Connect" -c "advancedConnect1dFunc";
+button -l "Inverse Connect" -c "inverseConnect1dFunc";
+button -l "Advanced Disconnect" -c advancedDisconnect1dFunc;
+
+separator -h 20;
+
+text -l "Bracket Connections" -fn boldLabelFont;
+checkBox -l "X_axis for 1d slider" -align right xControl;
+checkBox -l "Y_axis for 1d slider" -align right yControl;
+button -l "Bracket Connect" -c "bracketConnectDisconnectFunc connect";
+button -l "Bracket Disconnect" -c "bracketConnectDisconnectFunc disconnect";
+
+
+setParent..;
+setParent..;
+
+showWindow controlWin_1d;
+
+} // end func <controlWin_1d>.
+
+
+
+
+proc set1dControlFunc() {
+
+global string $sourceList[];
+$sourceList = `ls -sl`;
+
+//  Determining the character code.
+string $code = getCode1dFunc($sourceList[0]);
+
+//promptDialog -t "Enter index" -m "Enter the index" -b "OK";
+//string $stringIndex = `promptDialog -q -tx`;
+//int $index = int($stringIndex);
+
+int $maxIndex = getGreatestIndexFunc();
+
+//  Adding the pose to the blendShapeNode.
+blendShape -e -t ("baseHead_" + $code) ($maxIndex + 1) $sourceList[0] 1 ("morph_" + $code);
+
+//  Setting the camera <control view>
+lookThroughModelPanel persp modelPanel4;
+lookThroughModelPanel ("controlView_" + $code) modelPanel4;
+TwoSideBySideViewArrangement;
+
+//  creating the slider.
+create1dControlFunc ($maxIndex + 1);
+
+} // end func <set1dControlFunc>
+
+
+
+
+
+proc create1dControlFunc(int $index) {
+
+global string $sourceList[];
+//soourceList = `ls -sl`;
+string $sourceName = $sourceList[0];
+
+
+//  Naming the sliders and scopes.
+string $scopeName = ($sourceName + "_1dScope");
+string $sliderName = ($sourceName + "_1dSlider");
+string $textName = ($sourceName + "_1dtext");
+
+//  Creating an index group.
+string $indexName = ("index_" + $index + "_0");
+group -em -n $indexName;
+
+//  Creating the sliders, scopes and texts.
+curve -d 1 -p 0 0 0 -p 1 0 0 -p 1 0.15 0 -p 0 0.15 0 -p 0 0 0 -k 0 -k 1 -k 2 -k 3 -k 4 -n $scopeName ;
+CenterPivot;
+ 
+circle -r .076 -c 0 0 0 -nr 0 0 1 -sw 360 -r 0.11 -d 1 -ut 0 -tol 0.01 -s 4 -ch 1 -n $sliderName;
+move -r 0 .075 0; 
+CenterPivot;
+
+textCurves -ch 0 -t ($sourceList[0]/* + "_" + $index + ",0"*/) -o 1 -f obliqueLabelFont -n "temporary";
+planarSrf -ch 1 -d 3 -ko 0 -tol 0.01 -rn 0 -po 0 -n $textName;
+scale -r .04 .04 .04;
+CenterPivot;
+move -r 0 -.3 0;
+select -r "temporaryShape";
+delete;
+
+
+
+//  Creating the controls <grouping the slider and scope>.
+string $controlName = ($sourceName + "_1dControl");
+group -n $controlName $scopeName $sliderName ($textName + "Shape") $indexName;
+
+
+//  Determining the character code.
+string $code = getCode1dFunc($sourceList[0]);
+
+//  Putting the control at the controlView position.
+vector $controlPosition = `getAttr ("controlView_" + $code + ".t")`;
+move -a ($controlPosition.x) ($controlPosition.y) ($controlPosition.z - 60) $controlName;
+
+}
+
+
+
+
+proc prepare1dControlFunc() {
+
+global string $sourceList[];
+
+//  Freezing the control.
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 ($sourceList[0] + "_1dControl");
+
+//  Templating the scope and text.
+setAttr ($sourceList[0] + "_1dScope.template") 1;
+setAttr ($sourceList[0] + "_1dtext.template") 1;
+
+//  Limiting the ranges.
+transformLimits -tx -1 1 -etx 1 0 ($sourceList[0] + "_1dSlider");
+transformLimits -ty -1 1 -ety 1 0 ($sourceList[0] + "_1dSlider");
+transformLimits -tz -1 1 -etz 1 0 ($sourceList[0] + "_1dSlider");
+transformLimits -tz -1 1 -etz 1 1 ($sourceList[0] + "_1dSlider");
+transformLimits -ty -1 1 -ety 1 1 ($sourceList[0] + "_1dSlider");
+transformLimits -tx -1 1 -etx 1 1 ($sourceList[0] + "_1dSlider");
+transformLimits -tx 0 1 -etx 1 1 ($sourceList[0] + "_1dSlider");
+transformLimits -ty 0 1 -ety 1 1 ($sourceList[0] + "_1dSlider");
+transformLimits -ty 0 0 -ety 1 1 ($sourceList[0] + "_1dSlider");
+transformLimits -tz 0 1 -etz 1 1 ($sourceList[0] + "_1dSlider");
+transformLimits -tz 0 0 -etz 1 1 ($sourceList[0] + "_1dSlider");
+
+// Recalling the "connectSlider2Morph1dFunc".
+connectSlider2Morph1dFunc;
+
+//  Recalling the "emphasize1dControlFunc".
+emphasize1dControlFunc 3.5;
+
+select -cl;
+}
+
+
+
+
+
+proc selectDeletePerSlider1dFunc(string $mode) {
+
+string $sliderList[] = `ls -sl`;
+select -cl;
+//string $sliderName = $sliderList[0];
+
+int $sliderListCount = `size $sliderList`;
+string $sliderNameApart[];
+
+int $counter;
+for ($counter = 0 ; $counter < $sliderListCount ; $counter++) {
+
+int $count = `tokenize $sliderList[$counter] "_" $sliderNameApart`;
+if ($count != 3) 
+  error "The name of the selected slider is not standard!";
+
+//  Determining the mode to select or delete.
+if ($mode == "select")
+  select -add ($sliderNameApart[0] + "_" + $sliderNameApart[1] + "_1dControl");
+else 
+  delete ($sliderNameApart[0] + "_" + $sliderNameApart[1] + "_1dControl");
+
+} // end for
+
+}
+
+
+
+
+
+proc connectSlider2Morph1dFunc() {
+
+global string $sourceList[];
+string $sourceName = $sourceList[0];
+
+//  Determining the character code <$code>.
+string $code = getCode1dFunc ($sourceName);
+
+string $sliderAttrName = $sourceName + "_1dSlider.tx";
+string $blendShapeAttrName = "morph_" + $code + "." + $sourceName;
+
+//  Connecting the slider and blendShape node.
+connectAttr $sliderAttrName $blendShapeAttrName;
+
+}
+
+
+
+
+proc connectDisconnect1dFunc(string $mode) {
+
+string $slidersList[] = `ls -sl`;
+
+string $slider1 = $slidersList[0];
+string $slider2 = $slidersList[1];
+
+//  Determining the mode to connect or disconnect.
+if ($mode == "connect")
+  connectAttr -f ($slider1 + ".tx") ($slider2 + ".tx");
+else
+  disconnectAttr ($slider1 + ".tx") ($slider2 + ".tx");
+
+}
+
+
+
+
+proc inverseConnect1dFunc() {
+
+//  Loading "inverseRange.mll" plugin.
+loadPlugin -qt "C:/Documents and Settings/All Users/Documents/sctipts_IconImages/plugins/inverseRange.mll";
+
+
+string $slidersList[] = `ls -sl`;
+string $slider1 = $slidersList[0];
+string $slider2 = $slidersList[1];
+
+string $nodeName;
+
+//  Creating "tweakerRange" node and connecting the node and the sliders.
+$nodeName = `createNode inverseRange -n inversRange`;
+connectAttr -f ($slider1 + ".tx") ($nodeName + ".input");
+connectAttr -f ($nodeName + ".output") ($slider2 + ".tx");
+
+}
+
+
+
+
+proc advancedConnect1dFunc() {
+
+//  Loading "tweakerRange.mll" plugin.
+loadPlugin -qt "C:/Documents and Settings/All Users/Documents/sctipts_IconImages/plugins/rangeTweaker.mll";
+
+string $slidersList[] = `ls -sl`;
+string $slider1 = $slidersList[0];
+string $slider2 = $slidersList[1];
+
+//  Getting the values from the UI sliders.
+float $indexRange = `floatFieldGrp -q -v1 indexRangeControl`;
+float $initialRange = `floatFieldGrp -q -v1 initialRangeControl`;
+
+//  Creating "tweakerRange" node and setting the given values.
+string $nodeName = `createNode rangeTweaker -n rangeTweaker`;
+setAttr ($nodeName + ".indexValue") ($indexRange);
+setAttr ($nodeName + ".initialValue") ($initialRange);
+
+//  Connecting the node and the sliders.
+connectAttr -f ($slider1 + ".tx") ($nodeName + ".input");
+connectAttr -f ($nodeName + ".output") ($slider2 + ".tx");
+
+}
+
+
+
+
+proc advancedDisconnect1dFunc() {
+
+string $slidersList[] = `ls -sl`;
+string $slider1 = $slidersList[0];
+string $slider2 = $slidersList[1];
+
+//  Getting the input and output connections.
+string $incomesList[] = `listConnections -s 0 ($slider1)`;
+int $incomesCount = `size $incomesList`;
+string $outcomesList[] = `listConnections -d 0 ($slider2)`;
+int $outcomesCount = `size $outcomesList`;
+
+//  Determining the tweakerRange node bitween two nodes.
+int $counter = 0;
+string $nodeNameList[];
+string $incomes;
+string $outcomes;
+for ($incomes in $incomesList)
+  for ($outcomes in $outcomesList)
+    if ($incomes == $outcomes) {
+      $nodeNameList[$counter] = $incomes;
+      $counter++;
+    }
+    
+string $nodeName = $nodeNameList[0];
+print ($nodeName);
+
+//  Disconnecting the tweakerRange node.
+//disconnectAttr ($slider1 + ".tx") ($nodeName + ".input");
+//disconnectAttr ($nodeName + ".output") ($slider2 + ".tx");
+
+//  Deleting the node.
+delete $nodeName;
+    
+}
+
+
+
+
+proc string getCode1dFunc(string $name) {
+
+string $sourceNameApart[];
+tokenize ($name, "_", $sourceNameApart);
+string $code = $sourceNameApart[1];
+
+return $code;
+
+}
+
+
+proc emphasize1dControlFunc(float $scaleValue) {
+
+selectDeletePerSlider1dFunc("select");
+scale -r $scaleValue $scaleValue $scaleValue;
+
+}
+
+//-------  Face Tools (control 1d) <end>  ----------------------------------------------------------
+
+
+
+
+
+
+//-------  Face Tools (control 2d) <start>  ----------------------------------------------------------
+
+//  Global variables.
+global string $sourceList[];
+global string $prefixName;
+
+
+//  Lunching the controlWin_2d.
+global proc controlWin_2d() {
+
+
+//  Lunching the window <controlWin_2d> and <controlWin_1d>.
+if (`window -ex controlWin_2d`)
+  deleteUI controlWin_2d;
+
+if (`window -ex controlWin_1d`) 
+  deleteUI controlWin_1d;
+
+//  Designing the window <controlWin>.
+window -t "2d Contorl Window" controlWin_2d;
+scrollLayout;
+
+columnLayout -adj 1;
+
+frameLayout -l "Preparations" -cll 1 -cl 0 -bs "in";
+columnLayout -adj 1;
+
+text -l "Prepare Scene" -fn boldLabelFont;
+button -l "Prepare Scene" -c prepareSceneFunc;
+
+separator -h 20;
+
+text -l "Add Controls" -fn boldLabelFont;
+button -l "Set Control" -c set2dControlFunc;
+button -l "Prepare Control" -c prepare2dControlFunc;
+button -l "emphasize Control" -c "emphasize2dControlFunc 1.5";
+
+separator -h 20;
+
+text -l "Tweaking" -fn boldLabelFont;
+intFieldGrp -l "View ID" -v1 1 -cc setViewFunc viewIdControl;
+button -l "Greatest index" -c getGreatestIndexFunc;
+textField -en 0 -tx "Hit button to get the greatest index" -h 25 getGreatestIndexControl;
+
+setParent..;
+setParent..;
+
+
+
+
+frameLayout -l "Selection & Deleting" -cll 1 -cl 1 -bs "in";
+columnLayout -adj 1;
+
+separator -h 20;
+
+text -l "Select & Delete Controls" -fn boldLabelFont;
+button -l "Select Last Control" -c "selectDeleteLast2dControlFunc select";
+button -l "Delete Last Control" -c "selectDeleteLast2dControlFunc delete";
+button -l "Select Per Slider" -c "selectDeletePerSlider2dFunc select";
+button -l "Delete Per Slider" -c "selectDeletePerSlider2dFunc delete";
+
+setParent..;
+setParent..;
+
+
+
+frameLayout -l "Connections" -cll 1 -cl 1 -bs "in";
+columnLayout -adj 1;
+
+separator -h 20;
+
+text -l "Simple Connection" -fn boldLabelFont;
+button -l "Connect" -c "connectDisconnect2dFunc connect";
+button -l "Disconnect" -c "connectDisconnect2dFunc disconnect";
+
+separator -h 20;
+
+text -l "Advanced Connection" -fn boldLabelFont;
+floatFieldGrp -l "Index Range" -v1 1 -adj 1 -cal 1 left indexRangeControl; 
+floatFieldGrp -l "Initial Range" -adj 1 -cal 1 left initialRangeControl;
+button -l "Advanced Connect" -c "advancedConnect2dFunc";
+button -l "Inverse Connect" -c "inverseConnect2dFunc";
+button -l "Advanced Disconnect" -c advancedDisconnect2dFunc;
+
+separator -h 20;
+
+text -l "Bracket Connections" -fn boldLabelFont;
+checkBox -l "X_axis for 2d slider" -align right xControl;
+checkBox -l "Y_axis for 2d slider" -align right yControl;
+button -l "Bracket Connect" -c "bracketConnectDisconnectFunc connect";
+button -l "Bracket Disconnect" -c "bracketConnectDisconnectFunc disconnect";
+
+separator -h 20;
+
+text -l "Cross Connections" -fn boldLabelFont;
+button -l "Cross Connect" -c "crossConnectDisconnectFunc connect";
+button -l "Cross Disconnect" -c "crossConnectDisconnectFunc disconnect";
+
+
+
+setParent..;
+setParent..;
+
+showWindow controlWin_2d;
+
+
+} // end func <controlWin_2d>
+
+
+
+
+
+
+proc set2dControlFunc() {
+
+global string $sourceList[];
+$sourceList = `ls -sl`;
+
+//  Determining the character code.
+string $code1 = getCode2dFunc($sourceList[0]);
+string $code2 = getCode2dFunc($sourceList[1]);
+if ($code1 != $code2)
+  error "The two poses are not from the same character!"; 
+
+//  Propmpting the index.
+//promptDialog -t "Enter index" -m "Enter the index" -b "OK";
+//string $stringIndex = `promptDialog -q -tx`;
+//int $maxIndex = int($stringIndex);
+int $maxIndex = getGreatestIndexFunc();
+
+//  Adding the pose to the blendShapeNode.
+blendShape -e -t ("baseHead_" + $code1) ($maxIndex + 0) $sourceList[0] 1 ("morph_" + $code1);
+blendShape -e -t ("baseHead_" + $code1) ($maxIndex + 1) $sourceList[1] 1 ("morph_" + $code1);
+
+
+//  Setting the camera <control view>.
+lookThroughModelPanel persp modelPanel4;
+lookThroughModelPanel ("controlView_" + $code1) modelPanel4;
+TwoSideBySideViewArrangement;
+
+//  creating the slider.
+create2dControlFunc ($maxIndex + 1);
+
+
+} // end func <set2dControlFunc>
+
+
+
+
+
+proc create2dControlFunc(int $index) {
+
+global string $prefixName;
+global string $sourceList[];
+//$sourceList = `ls -sl`;
+//string $sourceName = $sourceList[0];
+
+
+
+//  Naming the sliders and scopes.
+string $sourceListApart[];
+tokenize ($sourceList[0], "_", $sourceListApart);
+$prefixName = $sourceListApart[0];
+
+string $scopeName = ($prefixName + "_" + $sourceList[1] + "_2dScope");
+string $sliderName = ($prefixName + "_" + $sourceList[1] + "_2dSlider");
+string $textName = ($prefixName + "_" + $sourceList[1] + "_2dtext");
+
+//  Creating an index group.
+string $indexName = ("index_" + $index + "_" + ($index + 1));
+group -em -n $indexName;
+
+
+
+//  Creating the sliders, scopes and texts.
+curve -d 1 -p 0 0 0 -p 1 0 0 -p 1 1 0 -p 0 1 0 -p 0 0 0 -p 1 1 0 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -n $scopeName;
+CenterPivot;
+ 
+circle -r .076 -c 0 0 0 -nr 0 0 1 -sw 360 -r 0.11 -d 1 -ut 0 -tol 0.01 -s 4 -ch 1 -n $sliderName;
+CenterPivot;
+
+textCurves -ch 0 -t ($prefixName + "," + $sourceList[1]/* + "_" + $index + "," + ($index + 1)*/) -o 1 -f obliqueLabelFont -n "temporary";
+planarSrf -ch 1 -d 3 -ko 0 -tol 0.01 -rn 0 -po 0 -n $textName;
+scale -r .022 .022 .022;
+CenterPivot;
+move -r 0 -.2 0;
+select -r "temporaryShape";
+delete;
+
+
+
+//  Creating the controls <grouping the slider and scope>.
+string $controlName = ($prefixName + "_" + $sourceList[1] + "_2dControl");
+group -n $controlName $scopeName $sliderName ($textName + "Shape") $indexName;
+
+
+//  Determining the character code.
+string $code = getCode2dFunc($sourceList[0]);
+
+//  Putting the control at the controlView position.
+vector $controlPosition = `getAttr ("controlView_" + $code + ".t")`;
+move -a ($controlPosition.x) ($controlPosition.y) ($controlPosition.z - 60) $controlName;
+
+}
+
+
+
+
+proc prepare2dControlFunc() {
+
+global string $sourceList[];
+global string $prefixName;
+
+//  Part naming.
+string $scopeName = ($prefixName + "_" + $sourceList[1] + "_2dScope");
+string $sliderName = ($prefixName + "_" + $sourceList[1] + "_2dSlider");
+string $textName = ($prefixName + "_" + $sourceList[1] + "_2dtext");
+string $controlName = ($prefixName + "_" + $sourceList[1] + "_2dControl");
+
+//  Freezing the control.
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 $controlName;
+
+//  Templating the scope and text.
+setAttr ($scopeName + ".template") 1;
+setAttr ($textName + ".template") 1;
+
+//  Limiting the ranges.
+transformLimits -tx -1 1 -etx 1 0 $sliderName;
+transformLimits -tx -1 1 -etx 1 1 $sliderName;
+transformLimits -ty -1 1 -ety 1 0 $sliderName;
+transformLimits -ty -1 1 -ety 1 1 $sliderName;
+transformLimits -tz -1 1 -etz 1 0 $sliderName;
+transformLimits -tz -1 1 -etz 1 1 $sliderName;
+transformLimits -tx 0 1 -etx 1 1 $sliderName;
+transformLimits -ty 0 1 -ety 1 1 $sliderName;
+transformLimits -tz 0 1 -etz 1 1 $sliderName;
+transformLimits -tz 0 0 -etz 1 1 $sliderName;
+
+//  Recalling the "connectSlider2Morph2dFunc" func.
+connectSlider2Morph2dFunc;
+
+//  Recalling the "emphasize2dControlFunc" func.
+emphasize2dControlFunc 3.5;
+
+select -cl;
+}
+
+
+
+
+proc connectSlider2Morph2dFunc() {
+
+global string $sourceList[];
+global string $prefixName;
+
+//  Parts naming.
+string $sliderName = ($prefixName + "_" + $sourceList[1] + "_2dSlider");
+
+
+//  Determining the character code <$code>.
+string $code = getCode2dFunc ($sourceList[0]);
+
+string $sliderAttrName1 = ($sliderName + ".tx");
+string $sliderAttrName2 = ($sliderName + ".ty");
+
+string $blendShapeAttrName1 = "morph_" + $code + "." + $sourceList[0];
+string $blendShapeAttrName2 = "morph_" + $code + "." + $sourceList[1];
+
+connectAttr $sliderAttrName1 $blendShapeAttrName1;
+connectAttr $sliderAttrName2 $blendShapeAttrName2;
+
+}
+
+
+
+
+proc connectDisconnect2dFunc(string $mode) {
+
+string $slidersList[] = `ls -sl`;
+
+string $slider1 = $slidersList[0];
+string $slider2 = $slidersList[1];
+
+if ($mode == "connect") {
+  connectAttr -f ($slider1 + ".tx") ($slider2 + ".tx");
+  connectAttr -f ($slider1 + ".ty") ($slider2 + ".ty");
+}
+else {
+  disconnectAttr ($slider1 + ".tx") ($slider2 + ".tx");
+  disconnectAttr ($slider1 + ".ty") ($slider2 + ".ty");
+}
+
+}
+
+
+
+
+proc selectDeletePerSlider2dFunc(string $mode) {
+
+string $sliderList[] = `ls -sl`;
+select -cl;
+//string $sliderName = $sliderList[0];
+int $sliderListCount = `size $sliderList`;
+
+string $sliderNameApart[];
+
+int $counter;
+for ($counter = 0 ; $counter < $sliderListCount ; $counter++) {
+
+int $count = `tokenize $sliderList[$counter] "_" $sliderNameApart`;
+if ($count != 4) 
+  error "The name of the selected slider is not standard!";
+
+if ($mode == "select")
+  select -add ($sliderNameApart[0] + "_" + $sliderNameApart[1] + "_" + $sliderNameApart[2] + "_2dControl");
+else 
+//  removeMorphFunc($sliderNameApart);
+  delete ($sliderNameApart[0] + "_" + $sliderNameApart[1] + "_" + $sliderNameApart[2] + "_2dControl");
+
+} // end for
+
+}
+
+
+
+
+
+proc selectDeleteLast2dControlFunc(string $mode) {
+
+global string $sourceList[];
+global string $prefixName;
+
+string $controlName = ($prefixName + "_" + $sourceList[1] + "_2dControl");
+
+if ($mode == "select")
+  select $controlName;
+else
+  delete $controlName; 
+
+}
+
+
+
+/*
+proc removeMorphFunc(string $sliderNameApart[]) {
+
+global string $sourceList[];
+
+string $controlName = ($sliderNameApart[0] + "_" + $sliderNameApart[1] + "_" + $sliderNameApart[2] + "_" + "2dControl");
+
+select ($controlName + "|" + "index_*");
+string $indexList[] = `ls -sl`;
+string $indexName = $indexList[0];
+
+string $indexNameApart[];
+int $count = tokenize ($indexName, "_", $indexNameApart);
+if ($count != 3)
+  error "The name of the index is not standard!";
+
+int $index1 = int($indexNameApart[1]);
+int $index2 = int($indexNameApart[2]);
+
+blendShape -e  -tc 0 -rm -t baseHead_2 ($index1) $sourceList[0] 1 -t baseHead_2 ($index1) baseHead_2 1 baseHead_2;
+blendShape -e  -tc 0 -rm -t baseHead_2 ($index2) $sourceList[0] 1 -t baseHead_2 ($index2) baseHead_2 1 baseHead_2;
+}
+*/
+
+
+
+
+proc inverseConnect2dFunc() {
+
+//  Loading "inverseRange.mll" plugin.
+loadPlugin -qt "C:/Documents and Settings/All Users/Documents/sctipts_IconImages/plugins/inverseRange.mll";
+
+string $slidersList[] = `ls -sl`;
+string $slider1 = $slidersList[0];
+string $slider2 = $slidersList[1];
+
+string $nodeName = `createNode inverseRange -n inverseRange`;
+connectAttr ($slider1 + ".tx") ($nodeName + ".input");
+connectAttr ($nodeName + ".output") ($slider2 + ".tx");
+
+string $nodeName = `createNode inverseRange -n inverseRange`;
+connectAttr ($slider1 + ".ty") ($nodeName + ".input");
+connectAttr ($nodeName + ".output") ($slider2 + ".ty");
+
+}
+
+
+
+
+
+proc advancedConnect2dFunc() {
+
+//  Loading "tweakerRange.mll" plugin.
+loadPlugin -qt "C:/Documents and Settings/All Users/Documents/sctipts_IconImages/plugins/rangeTweaker.mll";
+
+string $slidersList[] = `ls -sl`;
+string $slider1 = $slidersList[0];
+string $slider2 = $slidersList[1];
+
+//  Getting the values from the UI sliders.
+float $indexRange = `floatFieldGrp -q -v1 indexRangeControl`;
+float $initialRange = `floatFieldGrp -q -v1 initialRangeControl`;
+
+//  Creating "tweakerRange" nodes and setting the given values.
+
+//  Creating the first node. <.tx>
+string $nodeName1 = `createNode rangeTweaker -n rangeTweaker`;
+setAttr ($nodeName1 + ".indexValue") ($indexRange);
+setAttr ($nodeName1 + ".initialValue") ($initialRange);
+
+//  Creating the second node. <.ty>
+string $nodeName2 = `createNode rangeTweaker -n rangeTweaker`;
+setAttr ($nodeName2 + ".indexValue") ($indexRange);
+setAttr ($nodeName2 + ".initialValue") ($initialRange);
+
+
+//  Connecting the nodes and the sliders.
+
+//  Connecting the first slider.
+connectAttr -f ($slider1 + ".tx") ($nodeName1 + ".input");
+connectAttr -f ($nodeName1 + ".output") ($slider2 + ".tx");
+
+//  Connecting the second slider.
+connectAttr -f ($slider1 + ".ty") ($nodeName2 + ".input");
+connectAttr -f ($nodeName2 + ".output") ($slider2 + ".ty");
+
+}
+
+
+
+
+
+proc advancedDisconnect2dFunc() {
+
+string $slidersList[] = `ls -sl`;
+string $slider1 = $slidersList[0];
+string $slider2 = $slidersList[1];
+
+//  Getting the input and output connections.
+string $incomesList[] = `listConnections -s 0 ($slider1)`;
+int $incomesCount = `size $incomesList`;
+string $outcomesList[] = `listConnections -d 0 ($slider2)`;
+int $outcomesCount = `size $outcomesList`;
+
+//  Determining the tweakerRange node bitween two nodes.
+int $counter = 0;
+string $nodeNameList[];
+string $incomes;
+string $outcomes;
+for ($incomes in $incomesList)
+  for ($outcomes in $outcomesList)
+    if ($incomes == $outcomes) {
+      $nodeNameList[$counter] = $incomes;
+      $counter++;
+    }
+    
+string $nodeName1 = $nodeNameList[0];
+string $nodeName2 = $nodeNameList[1];
+
+//  Disconnecting the tweakerRange node.
+
+//  Disconnecting the first node.
+//disconnectAttr ($slider1 + ".tx") ($nodeName1 + ".input");
+//disconnectAttr ($nodeName1 + ".output") ($slider2 + ".tx");
+
+//  Disconnecting the second node.
+//disconnectAttr ($slider1 + ".ty") ($nodeName2 + ".input");
+//disconnectAttr ($nodeName2 + ".output") ($slider2 + ".ty");
+
+//  Deleting the nodes.
+delete $nodeName1;
+delete $nodeName2;
+    
+}
+
+
+
+
+
+
+
+proc bracketConnectDisconnectFunc(string $mode) {
+
+string $slidersList[] = `ls -sl`;
+string $slider1 = $slidersList[0];
+string $slider2 = $slidersList[1];
+
+//  Determining the checkBoxs values.
+int $xMode = `checkBox -q -v xControl`;
+int $yMode = `checkBox -q -v yControl`;
+
+//  Tokenizing the sliders names.
+string $sliderNameApart[];
+tokenize $slider1 "_" $sliderNameApart;
+string $suffix = $sliderNameApart[2];
+
+//  Determining wheather the 1d or 2d slider is selected first.
+if ($mode == "connect")
+
+//  Connection.
+
+  if ($suffix == "1dSlider") {
+
+    if ($xMode && $yMode) {
+      connectAttr -f ($slider1 + ".tx") ($slider2 + ".tx");
+      connectAttr -f ($slider1 + ".tx") ($slider2 + ".ty");
+    }
+
+    else if ( $xMode && !($yMode) )
+      connectAttr -f ($slider1 + ".tx") ($slider2 + ".tx");
+
+    else if ( !($xMode) && $yMode )
+      connectAttr -f ($slider1 + ".tx") ($slider2 + ".ty");
+
+    else 
+      error "No mode determined";
+
+  } // end if <$suffix>
+
+  else {
+
+    if ($xMode && $yMode) {
+
+//  Creating the "averageRanges" node.
+      loadPlugin -qt "C:/Documents and Settings/All Users/Documents/sctipts_IconImages/plugins/averageRanges.mll";
+      string $nodeName = `createNode averageRanges -n averageRanges`;
+
+//  Connecting the created node and the sliders.
+
+      connectAttr -f ($slider1 + ".tx") ($nodeName + ".input1");
+      connectAttr -f ($slider1 + ".ty") ($nodeName + ".input2");
+
+      connectAttr -f ($nodeName + ".output") ($slider2 + ".tx");
+    }
+
+    else if ( $xMode && !($yMode) )
+      connectAttr -f ($slider1 + ".tx") ($slider2 + ".tx");
+
+    else if ( !($xMode) && $yMode )
+      connectAttr -f ($slider1 + ".ty") ($slider2 + ".tx");
+
+    else 
+      error "No mode determined";
+
+  } // end else <$suffix for connect>
+
+
+
+
+else
+
+//  Disconnection.
+
+
+  if ($suffix == "1dSlider") {
+
+    if ($xMode && $yMode) {
+      disconnectAttr ($slider1 + ".tx") ($slider2 + ".tx");
+      disconnectAttr ($slider1 + ".tx") ($slider2 + ".ty");
+    }
+
+    else if ( $xMode && !($yMode) )
+      disconnectAttr ($slider1 + ".tx") ($slider2 + ".tx");
+
+    else if ( !($xMode) && $yMode )
+      disconnectAttr ($slider1 + ".tx") ($slider2 + ".ty");
+
+    else 
+      error "No mode determined";
+
+  } // end if <$suffix>
+
+  else {
+
+    if ($xMode && $yMode) 
+
+//  Disconnecting the created node and the sliders.
+   advancedDisconnect2dFunc;
+
+    else if ( $xMode && !($yMode) )
+      disconnectAttr ($slider1 + ".tx") ($slider2 + ".tx");
+
+    else if ( !($xMode) && $yMode )
+      disconnectAttr ($slider1 + ".ty") ($slider2 + ".tx");
+
+    else 
+      error "No mode determined";
+
+  } // end else <$suffix for disconnect>
+
+
+
+} // end func <connectDisconnect2dFunc>
+
+
+
+
+proc crossConnectDisconnectFunc(string $mode) {
+
+string $slidersList[] = `ls -sl`;
+string $slider1 = $slidersList[0];
+string $slider2 = $slidersList[1];
+
+if ($mode == "connect") {
+
+  connectAttr ($slider1 + ".tx") ($slider2 + ".ty");
+  connectAttr ($slider1 + ".ty") ($slider2 + ".tx");
+  
+}
+
+else {
+
+  disconnectAttr ($slider1 + ".tx") ($slider2 + ".ty");
+  disconnectAttr ($slider1 + ".ty") ($slider2 + ".tx");
+
+}
+
+}
+ 
+
+
+
+proc emphasize2dControlFunc(float $scaleValue) {
+
+selectDeletePerSlider2dFunc("select");
+scale -r $scaleValue $scaleValue $scaleValue;
+
+}
+
+
+
+
+
+proc string getCode2dFunc(string $name) {
+
+string $sourceNameApart[];
+int $count = tokenize ($name, "_", $sourceNameApart);
+if ($count != 2)
+  error "The naming convention is not true! <pose name>";
+
+string $code = $sourceNameApart[1];
+
+return $code;
+
+}
+
+//-------  Face Tools (control 2d) <end>  ----------------------------------------------------------
+
+
+
+
+
+//---------  Common procs for 1d and 2d controls <start>  ------------------------
+
+proc int getGreatestIndexFunc() {
+
+select -r "index*";
+string $indexStringList[] = `ls -sl`;
+string $indexString;
+
+int $max = 0;
+
+string $indexStringApart[];
+
+for ($indexString in $indexStringList) {
+  
+  int $count = `tokenize $indexString  "_" $indexStringApart`;
+  if ($count != 3)
+    error "The name convention is not true <index>!";
+  else {
+    int $index1 = int($indexStringApart[1]);
+    int $index2 = int($indexStringApart[2]);
+  
+    if ($index1 > $max)
+      $max = $index1;
+    if ($index2 > $max)
+      $max = $index2;
+  }
+
+} // end for
+
+if (`textField -ex getGreatestIndexControl`)
+  textField -e -tx $max getGreatestIndexControl;
+else
+  print ("\nGreatest index: " + $max + "\n");
+
+select -cl;
+
+return $max;
+
+} // end func <getGreatestIndexFunc>
+
+//print (getGreatestIndexFunc());
+
+
+
+
+proc prepareSceneFunc() {
+
+int $maxCode = 3;
+
+int $codeCounter;
+for ($codeCounter = 1 ; $codeCounter <= $maxCode ; $codeCounter++)
+  if (   (objExists ("baseHead_" + $codeCounter))    &&    !(objExists ("morph_" + $codeCounter))   ) {
+
+//  Creating the morph node.  
+      select -r ("baseHead_" + $codeCounter);
+      duplicate -rr -n temporary;
+      select -add ("baseHead_" + $codeCounter);
+      blendShape -n ("morph_" + $codeCounter);
+      delete temporary;
+
+//  Creating the control view.
+      select -r front;
+      duplicate -rr -n ("controlView_" + $codeCounter);
+      move -r (100 * $codeCounter) 0 0;
+
+  }
+
+//  Creating "index_0_0" node.
+    if (!`objExists index_0_0`) {
+      group -em -n "index_0_0";
+      group -n "Dont_delete";
+    }
+
+ select -cl;
+
+}
+
+
+
+proc setViewFunc() {
+
+int $viewId = `intFieldGrp -q -v1 viewIdControl`;
+
+//  Setting the camera <control view>.
+lookThroughModelPanel persp modelPanel4;
+lookThroughModelPanel ("controlView_" + $viewId) modelPanel4;
+TwoSideBySideViewArrangement;
+
+//  Selecting every thing based on the code.
+select -r ("controlView_" + $viewId);
+select -add ("*_" + $viewId + "_*Control");
+
+
+}
+
+//---------  Common procs for 1d and 2d controls <end>  ------------------------
+
+
+

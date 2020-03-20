@@ -1,0 +1,65 @@
+//---------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------------------------------------------------------------------//
+//	SCRIPT:	Animator Tools.mel	
+//	AUTHOR:	Hadi Sarraf   _   <didarvfx co.>
+//
+//	DATE:	       7 / May / 2006   _    1385 / 2 / 17 	
+//
+//     USAGE:        Accessing every tools the animator needed.
+//
+//                   This script is divided to four parts :
+//                       1. Selection Sketch : You can select every icon determined for you 
+//                                               on the character through a sketch not the scene.
+//                          . This selection mode can be sensitive to lunch the related window included 
+//                              the properties for the selected icon. 
+//                              This mode can be switched on or off. 
+//                       2. Motion Connections : This is a strategy to simplify the character setup system 
+//                                                 by dividing the `rig` and `skin` tasks to two hierarchies.
+//                       3. Quick Access : Accessing every animator needs quickly.
+//                       4. Face Tools : Descriped later. 
+//                                                   
+//---------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------------------------------------------------------------------// 
+
+
+
+global proc getAnimatorTools() {
+
+//string $dir = "D:/Hadi`s workshop/rigging_tests/scripts/sources/finals/";
+
+source "D:/Hadi`s workshop/rigging_tests/scripts/sources/finals/motionConnections.mel";
+
+
+
+//---------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------------------------------------------------------------------//
+//	SCRIPT:	Facial Tools.mel	
+//	AUTHOR:	Hadi Sarraf   _   <didarvfx co.>
+//
+//	DATE:	       23 / April / 2006   _    1385 / 2 / 3 	
+//
+//     USAGE:        Every thing about any facial morph is done through this script.
+//
+//                     This script is divided to four parts :
+//                     1. The main window : You can load `1d or 2d control windows` 
+//                        or load the `list of poses`.
+//                     2. 1d control window (controlWin_1d) : Editing every thing related to 1d controls.
+//                     3. 2d control window (controlWin_2d) : Editing every thing related to 2d controls.
+//                     4. Poses list window (posesList) : List every poses include the related character file.
+//                        You can use this list to load your poses into your scene quickly.
+//
+//---------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------------------------------------------------------------------// 
+
+
+
+source "D:/Hadi`s workshop/rigging_tests/scripts/sources/finals/controlWin_1d.mel";
+source "D:/Hadi`s workshop/rigging_tests/scripts/sources/finals/controlWin_2d.mel";
+source "D:/Hadi`s workshop/rigging_tests/scripts/sources/finals/common1d2d.mel";
+source "D:/Hadi`s workshop/rigging_tests/scripts/sources/finals/listLuncher.mel";
+source "D:/Hadi`s workshop/rigging_tests/scripts/sources/finals/windowLuncher.mel";
+
+//  source the main user interface.
+source "D:/Hadi`s workshop/rigging_tests/scripts/sources/finals/mainWindow.mel";
+
+}

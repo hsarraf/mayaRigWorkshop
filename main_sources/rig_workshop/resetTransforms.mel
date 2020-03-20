@@ -1,0 +1,17 @@
+global proc resetTransformsFunc(string $name) {
+
+  select $name;
+  select -hi;
+  string $jList[] = `ls -sl -type joint`;
+  string $jName;
+
+  for ($jName in $jList) {
+
+    setAttr ($jName + ".r") 0 0 0;
+    setAttr ($jName + ".s") 1 1 1;
+
+  }
+
+  select -cl;
+
+}

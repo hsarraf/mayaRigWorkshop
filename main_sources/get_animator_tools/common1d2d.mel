@@ -1,0 +1,92 @@
+global proc int getGreatestIndexFunc() {
+
+select -r "index*";
+string $indexStringList[] = `ls -sl`;
+string $indexString;
+
+int $max = 0;
+
+string $indexStringApart[];
+
+for ($indexString in $indexStringList) {
+  
+  int $count = `tokenize $indexString  "_" $indexStringApart`;
+  if ($count != 3)
+    error "The name convention is not true <index>!";
+  else {
+    int $index1 = int($indexStringApart[1]);
+    int $index2 = int($indexStringApart[2]);
+  
+    if ($index1 > $max)
+      $max = $index1;
+    if ($index2 > $max)
+      $max = $index2;
+  }
+
+} // end for
+
+if (`textField -ex getGreatestIndexControl`)
+  textField -e -tx $max getGreatestIndexControl;
+else
+  print ("\nGreatest index: " + $max + "\n");
+
+select -cl;
+
+return $max;
+
+} // end func <getGreatestIndexFunc>
+
+//print (getGreatestIndexFunc());
+
+
+
+
+global proc prepareSceneFunc() {
+
+int $maxCode = 3;
+
+int $codeCounter;
+for ($codeCounter = 1 ; $codeCounter <= $maxCode ; $codeCounter++)
+  if (   (objExists ("baseHead_" + $codeCounter))    &&    !(objExists ("morph_" + $codeCounter))   ) {
+
+//  Creating the morph node.  
+      select -r ("baseHead_" + $codeCounter);
+      duplicate -rr -n temporary;
+      select -add ("baseHead_" + $codeCounter);
+      blendShape -n ("morph_" + $codeCounter);
+      delete temporary;
+
+//  Creating the control view.
+      select -r front;
+      duplicate -rr -n ("controlView_" + $codeCounter);
+      move -r (100 * $codeCounter) 0 0;
+
+  }
+
+//  Creating "index_0_0" node.
+    if (!`objExists index_0_0`) {
+      group -em -n "index_0_0";
+      group -n "Dont_delete";
+    }
+
+ select -cl;
+
+}
+
+
+
+global proc setViewFunc() {
+
+int $viewId = `intFieldGrp -q -v1 viewIdControl`;
+
+//  Setting the camera <control view>.
+lookThroughModelPanel persp modelPanel4;
+lookThroughModelPanel ("controlView_" + $viewId) modelPanel4;
+TwoSideBySideViewArrangement;
+
+//  Selecting every thing based on the code.
+select -r ("controlView_" + $viewId);
+select -add ("*_" + $viewId + "_*Control");
+
+
+}

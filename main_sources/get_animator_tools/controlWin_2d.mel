@@ -1,0 +1,663 @@
+//  Global variables.
+global string $sourceList[];
+global string $prefixName;
+
+
+//  Lunching the controlWin_2d.
+global proc controlWin_2d() {
+
+
+//  Lunching the window <controlWin_2d> and <controlWin_1d>.
+if (`window -ex controlWin_2d`)
+  deleteUI controlWin_2d;
+
+if (`window -ex controlWin_1d`) 
+  deleteUI controlWin_1d;
+
+//  Designing the window <controlWin>.
+window -t "2d Contorl Window" controlWin_2d;
+scrollLayout;
+
+columnLayout -adj 1;
+
+frameLayout -l "Preparations" -cll 1 -cl 0 -bs "in";
+columnLayout -adj 1;
+
+text -l "Prepare Scene" -fn boldLabelFont;
+button -l "Prepare Scene" -c prepareSceneFunc;
+
+separator -h 20;
+
+text -l "Add Controls" -fn boldLabelFont;
+checkBox -l "Delete Pose" deletePoseControl;
+button -l "Set Control" -c set2dControlFunc;
+button -l "Prepare Control" -c prepare2dControlFunc;
+button -l "emphasize Control" -c "emphasize2dControlFunc 1.5";
+
+separator -h 20;
+
+text -l "Tweaking" -fn boldLabelFont;
+intFieldGrp -l "View ID" -v1 1 -cc setViewFunc viewIdControl;
+button -l "Greatest index" -c getGreatestIndexFunc;
+textField -en 0 -tx "Hit button to get the greatest index" -h 25 getGreatestIndexControl;
+
+setParent..;
+setParent..;
+
+
+
+
+frameLayout -l "Selection & Deleting" -cll 1 -cl 1 -bs "in";
+columnLayout -adj 1;
+
+separator -h 20;
+
+text -l "Select & Delete Controls" -fn boldLabelFont;
+button -l "Select Last Control" -c "selectDeleteLast2dControlFunc select";
+button -l "Delete Last Control" -c "selectDeleteLast2dControlFunc delete";
+button -l "Select Per Slider" -c "selectDeletePerSlider2dFunc select";
+button -l "Delete Per Slider" -c "selectDeletePerSlider2dFunc delete";
+
+setParent..;
+setParent..;
+
+
+
+frameLayout -l "Connections" -cll 1 -cl 1 -bs "in";
+columnLayout -adj 1;
+
+separator -h 20;
+
+text -l "Simple Connection" -fn boldLabelFont;
+button -l "Connect" -c "connectDisconnect2dFunc connect";
+button -l "Disconnect" -c "connectDisconnect2dFunc disconnect";
+
+separator -h 20;
+
+text -l "Advanced Connection" -fn boldLabelFont;
+floatFieldGrp -l "Index Range" -v1 1 -adj 1 -cal 1 left indexRangeControl; 
+floatFieldGrp -l "Initial Range" -adj 1 -cal 1 left initialRangeControl;
+button -l "Advanced Connect" -c "advancedConnect2dFunc";
+button -l "Inverse Connect" -c "inverseConnect2dFunc";
+button -l "Advanced Disconnect" -c advancedDisconnect2dFunc;
+
+separator -h 20;
+
+text -l "Bracket Connections" -fn boldLabelFont;
+checkBox -l "X_axis for 2d slider" -align right xControl;
+checkBox -l "Y_axis for 2d slider" -align right yControl;
+button -l "Bracket Connect" -c "bracketConnectDisconnectFunc connect";
+button -l "Bracket Disconnect" -c "bracketConnectDisconnectFunc disconnect";
+
+separator -h 20;
+
+text -l "Cross Connections" -fn boldLabelFont;
+button -l "Cross Connect" -c "crossConnectDisconnectFunc connect";
+button -l "Cross Disconnect" -c "crossConnectDisconnectFunc disconnect";
+
+
+
+setParent..;
+setParent..;
+
+showWindow controlWin_2d;
+
+
+} // end func <controlWin_2d>
+
+
+
+
+
+
+global proc set2dControlFunc() {
+
+global string $sourceList[];
+$sourceList = `ls -sl`;
+
+//  Determining the character code.
+string $code1 = getCode2dFunc($sourceList[0]);
+string $code2 = getCode2dFunc($sourceList[1]);
+if ($code1 != $code2)
+  error "The two poses are not from the same character!"; 
+
+//  Propmpting the index.
+//promptDialog -t "Enter index" -m "Enter the index" -b "OK";
+//string $stringIndex = `promptDialog -q -tx`;
+//int $maxIndex = int($stringIndex);
+int $maxIndex = getGreatestIndexFunc();
+
+//  Adding the pose to the blendShapeNode.
+blendShape -e -t ("baseHead_" + $code1) ($maxIndex + 0) $sourceList[0] 1 ("morph_" + $code1);
+blendShape -e -t ("baseHead_" + $code1) ($maxIndex + 1) $sourceList[1] 1 ("morph_" + $code1);
+if ( (`checkBox -ex deletePoseControl`) && (`checkBox -q -v deletePoseControl`) ) {
+  
+  delete $sourceList;
+
+//  Setting the camera <control view>.
+lookThroughModelPanel persp modelPanel4;
+lookThroughModelPanel ("controlView_" + $code1) modelPanel4;
+TwoSideBySideViewArrangement;
+
+//  creating the slider.
+create2dControlFunc ($maxIndex + 1);
+
+} // end if <checkBox>
+
+else {
+
+//  Setting the camera <control view>.
+lookThroughModelPanel persp modelPanel4;
+lookThroughModelPanel ("controlView_" + $code1) modelPanel4;
+TwoSideBySideViewArrangement;
+
+//  creating the slider.
+create2dControlFunc ($maxIndex + 1);
+ 
+} // end else <checkBox>
+
+} // end func <set2dControlFunc>
+
+
+
+
+
+global proc create2dControlFunc(int $index) {
+
+global string $prefixName;
+global string $sourceList[];
+//$sourceList = `ls -sl`;
+//string $sourceName = $sourceList[0];
+
+
+
+//  Naming the sliders and scopes.
+string $sourceListApart[];
+tokenize ($sourceList[0], "_", $sourceListApart);
+$prefixName = $sourceListApart[0];
+
+string $scopeName = ($prefixName + "_" + $sourceList[1] + "_2dScope");
+string $sliderName = ($prefixName + "_" + $sourceList[1] + "_2dSlider");
+string $textName = ($prefixName + "_" + $sourceList[1] + "_2dtext");
+
+//  Creating an index group.
+string $indexName = ("index_" + $index + "_" + ($index + 1));
+group -em -n $indexName;
+
+
+
+//  Creating the sliders, scopes and texts.
+curve -d 1 -p 0 0 0 -p 1 0 0 -p 1 1 0 -p 0 1 0 -p 0 0 0 -p 1 1 0 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -n $scopeName;
+CenterPivot;
+ 
+circle -r .076 -c 0 0 0 -nr 0 0 1 -sw 360 -r 0.11 -d 1 -ut 0 -tol 0.01 -s 4 -ch 1 -n $sliderName;
+CenterPivot;
+
+textCurves -ch 0 -t ($prefixName + "," + $sourceList[1]/* + "_" + $index + "," + ($index + 1)*/) -o 1 -f obliqueLabelFont -n "temporary";
+planarSrf -ch 1 -d 3 -ko 0 -tol 0.01 -rn 0 -po 0 -n $textName;
+scale -r .022 .022 .022;
+CenterPivot;
+move -r 0 -.2 0;
+select -r "temporaryShape";
+delete;
+
+
+
+//  Creating the controls <grouping the slider and scope>.
+string $controlName = ($prefixName + "_" + $sourceList[1] + "_2dControl");
+group -n $controlName $scopeName $sliderName ($textName + "Shape") $indexName;
+
+
+//  Determining the character code.
+string $code = getCode2dFunc($sourceList[0]);
+
+//  Putting the control at the controlView position.
+vector $controlPosition = `getAttr ("controlView_" + $code + ".t")`;
+move -a ($controlPosition.x) ($controlPosition.y) ($controlPosition.z - 60) $controlName;
+
+}
+
+
+
+
+global proc prepare2dControlFunc() {
+
+global string $sourceList[];
+global string $prefixName;
+
+//  Part naming.
+string $scopeName = ($prefixName + "_" + $sourceList[1] + "_2dScope");
+string $sliderName = ($prefixName + "_" + $sourceList[1] + "_2dSlider");
+string $textName = ($prefixName + "_" + $sourceList[1] + "_2dtext");
+string $controlName = ($prefixName + "_" + $sourceList[1] + "_2dControl");
+
+//  Freezing the control.
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 $controlName;
+
+//  Templating the scope and text.
+setAttr ($scopeName + ".template") 1;
+setAttr ($textName + ".template") 1;
+
+//  Limiting the ranges.
+transformLimits -tx -1 1 -etx 1 0 $sliderName;
+transformLimits -tx -1 1 -etx 1 1 $sliderName;
+transformLimits -ty -1 1 -ety 1 0 $sliderName;
+transformLimits -ty -1 1 -ety 1 1 $sliderName;
+transformLimits -tz -1 1 -etz 1 0 $sliderName;
+transformLimits -tz -1 1 -etz 1 1 $sliderName;
+transformLimits -tx 0 1 -etx 1 1 $sliderName;
+transformLimits -ty 0 1 -ety 1 1 $sliderName;
+transformLimits -tz 0 1 -etz 1 1 $sliderName;
+transformLimits -tz 0 0 -etz 1 1 $sliderName;
+
+//  Recalling the "connectSlider2Morph2dFunc" func.
+connectSlider2Morph2dFunc;
+
+//  Recalling the "emphasize2dControlFunc" func.
+emphasize2dControlFunc 3.5;
+
+select -cl;
+}
+
+
+
+
+global proc connectSlider2Morph2dFunc() {
+
+global string $sourceList[];
+global string $prefixName;
+
+//  Parts naming.
+string $sliderName = ($prefixName + "_" + $sourceList[1] + "_2dSlider");
+
+
+//  Determining the character code <$code>.
+string $code = getCode2dFunc ($sourceList[0]);
+
+string $sliderAttrName1 = ($sliderName + ".tx");
+string $sliderAttrName2 = ($sliderName + ".ty");
+
+string $blendShapeAttrName1 = "morph_" + $code + "." + $sourceList[0];
+string $blendShapeAttrName2 = "morph_" + $code + "." + $sourceList[1];
+
+connectAttr $sliderAttrName1 $blendShapeAttrName1;
+connectAttr $sliderAttrName2 $blendShapeAttrName2;
+
+}
+
+
+
+
+global proc connectDisconnect2dFunc(string $mode) {
+
+string $slidersList[] = `ls -sl`;
+
+string $slider1 = $slidersList[0];
+string $slider2 = $slidersList[1];
+
+if ($mode == "connect") {
+  connectAttr -f ($slider1 + ".tx") ($slider2 + ".tx");
+  connectAttr -f ($slider1 + ".ty") ($slider2 + ".ty");
+}
+else {
+  disconnectAttr ($slider1 + ".tx") ($slider2 + ".tx");
+  disconnectAttr ($slider1 + ".ty") ($slider2 + ".ty");
+}
+
+}
+
+
+
+
+global proc selectDeletePerSlider2dFunc(string $mode) {
+
+string $sliderList[] = `ls -sl`;
+select -cl;
+//string $sliderName = $sliderList[0];
+int $sliderListCount = `size $sliderList`;
+
+string $sliderNameApart[];
+
+int $counter;
+for ($counter = 0 ; $counter < $sliderListCount ; $counter++) {
+
+int $count = `tokenize $sliderList[$counter] "_" $sliderNameApart`;
+if ($count != 4) 
+  error "The name of the selected slider is not standard!";
+
+if ($mode == "select")
+  select -add ($sliderNameApart[0] + "_" + $sliderNameApart[1] + "_" + $sliderNameApart[2] + "_2dControl");
+else 
+//  removeMorphFunc($sliderNameApart);
+  delete ($sliderNameApart[0] + "_" + $sliderNameApart[1] + "_" + $sliderNameApart[2] + "_2dControl");
+
+} // end for
+
+}
+
+
+
+
+
+global proc selectDeleteLast2dControlFunc(string $mode) {
+
+global string $sourceList[];
+global string $prefixName;
+
+string $controlName = ($prefixName + "_" + $sourceList[1] + "_2dControl");
+
+if ($mode == "select")
+  select $controlName;
+else
+  delete $controlName; 
+
+}
+
+
+
+/*
+global proc removeMorphFunc(string $sliderNameApart[]) {
+
+global string $sourceList[];
+
+string $controlName = ($sliderNameApart[0] + "_" + $sliderNameApart[1] + "_" + $sliderNameApart[2] + "_" + "2dControl");
+
+select ($controlName + "|" + "index_*");
+string $indexList[] = `ls -sl`;
+string $indexName = $indexList[0];
+
+string $indexNameApart[];
+int $count = tokenize ($indexName, "_", $indexNameApart);
+if ($count != 3)
+  error "The name of the index is not standard!";
+
+int $index1 = int($indexNameApart[1]);
+int $index2 = int($indexNameApart[2]);
+
+blendShape -e  -tc 0 -rm -t baseHead_2 ($index1) $sourceList[0] 1 -t baseHead_2 ($index1) baseHead_2 1 baseHead_2;
+blendShape -e  -tc 0 -rm -t baseHead_2 ($index2) $sourceList[0] 1 -t baseHead_2 ($index2) baseHead_2 1 baseHead_2;
+}
+*/
+
+
+
+
+global proc inverseConnect2dFunc() {
+
+//  Loading "inverseRange.mll" plugin.
+loadPlugin -qt "C:/Documents and Settings/All Users/Documents/sctipts_IconImages/plugins/inverseRange.mll";
+
+string $slidersList[] = `ls -sl`;
+string $slider1 = $slidersList[0];
+string $slider2 = $slidersList[1];
+
+string $nodeName = `createNode inverseRange -n inverseRange`;
+connectAttr ($slider1 + ".tx") ($nodeName + ".input");
+connectAttr ($nodeName + ".output") ($slider2 + ".tx");
+
+string $nodeName = `createNode inverseRange -n inverseRange`;
+connectAttr ($slider1 + ".ty") ($nodeName + ".input");
+connectAttr ($nodeName + ".output") ($slider2 + ".ty");
+
+}
+
+
+
+
+
+global proc advancedConnect2dFunc() {
+
+//  Loading "tweakerRange.mll" plugin.
+loadPlugin -qt "C:/Documents and Settings/All Users/Documents/sctipts_IconImages/plugins/rangeTweaker.mll";
+
+string $slidersList[] = `ls -sl`;
+string $slider1 = $slidersList[0];
+string $slider2 = $slidersList[1];
+
+//  Getting the values from the UI sliders.
+float $indexRange = `floatFieldGrp -q -v1 indexRangeControl`;
+float $initialRange = `floatFieldGrp -q -v1 initialRangeControl`;
+
+//  Creating "tweakerRange" nodes and setting the given values.
+
+//  Creating the first node. <.tx>
+string $nodeName1 = `createNode rangeTweaker -n rangeTweaker`;
+setAttr ($nodeName1 + ".indexValue") ($indexRange);
+setAttr ($nodeName1 + ".initialValue") ($initialRange);
+
+//  Creating the second node. <.ty>
+string $nodeName2 = `createNode rangeTweaker -n rangeTweaker`;
+setAttr ($nodeName2 + ".indexValue") ($indexRange);
+setAttr ($nodeName2 + ".initialValue") ($initialRange);
+
+
+//  Connecting the nodes and the sliders.
+
+//  Connecting the first slider.
+connectAttr -f ($slider1 + ".tx") ($nodeName1 + ".input");
+connectAttr -f ($nodeName1 + ".output") ($slider2 + ".tx");
+
+//  Connecting the second slider.
+connectAttr -f ($slider1 + ".ty") ($nodeName2 + ".input");
+connectAttr -f ($nodeName2 + ".output") ($slider2 + ".ty");
+
+}
+
+
+
+
+
+global proc advancedDisconnect2dFunc() {
+
+string $slidersList[] = `ls -sl`;
+string $slider1 = $slidersList[0];
+string $slider2 = $slidersList[1];
+
+//  Getting the input and output connections.
+string $incomesList[] = `listConnections -s 0 ($slider1)`;
+int $incomesCount = `size $incomesList`;
+string $outcomesList[] = `listConnections -d 0 ($slider2)`;
+int $outcomesCount = `size $outcomesList`;
+
+//  Determining the tweakerRange node bitween two nodes.
+int $counter = 0;
+string $nodeNameList[];
+string $incomes;
+string $outcomes;
+for ($incomes in $incomesList)
+  for ($outcomes in $outcomesList)
+    if ($incomes == $outcomes) {
+      $nodeNameList[$counter] = $incomes;
+      $counter++;
+    }
+    
+string $nodeName1 = $nodeNameList[0];
+string $nodeName2 = $nodeNameList[1];
+
+//  Disconnecting the tweakerRange node.
+
+//  Disconnecting the first node.
+//disconnectAttr ($slider1 + ".tx") ($nodeName1 + ".input");
+//disconnectAttr ($nodeName1 + ".output") ($slider2 + ".tx");
+
+//  Disconnecting the second node.
+//disconnectAttr ($slider1 + ".ty") ($nodeName2 + ".input");
+//disconnectAttr ($nodeName2 + ".output") ($slider2 + ".ty");
+
+//  Deleting the nodes.
+delete $nodeName1;
+delete $nodeName2;
+    
+}
+
+
+
+
+
+
+
+global proc bracketConnectDisconnectFunc(string $mode) {
+
+string $slidersList[] = `ls -sl`;
+string $slider1 = $slidersList[0];
+string $slider2 = $slidersList[1];
+
+//  Determining the checkBoxs values.
+int $xMode = `checkBox -q -v xControl`;
+int $yMode = `checkBox -q -v yControl`;
+
+//  Tokenizing the sliders names.
+string $sliderNameApart[];
+tokenize $slider1 "_" $sliderNameApart;
+string $suffix = $sliderNameApart[2];
+
+//  Determining wheather the 1d or 2d slider is selected first.
+if ($mode == "connect")
+
+//  Connection.
+
+  if ($suffix == "1dSlider") {
+
+    if ($xMode && $yMode) {
+      connectAttr -f ($slider1 + ".tx") ($slider2 + ".tx");
+      connectAttr -f ($slider1 + ".tx") ($slider2 + ".ty");
+    }
+
+    else if ( $xMode && !($yMode) )
+      connectAttr -f ($slider1 + ".tx") ($slider2 + ".tx");
+
+    else if ( !($xMode) && $yMode )
+      connectAttr -f ($slider1 + ".tx") ($slider2 + ".ty");
+
+    else 
+      error "No mode determined";
+
+  } // end if <$suffix>
+
+  else {
+
+    if ($xMode && $yMode) {
+
+//  Creating the "averageRanges" node.
+      loadPlugin -qt "C:/Documents and Settings/All Users/Documents/sctipts_IconImages/plugins/averageRanges.mll";
+      string $nodeName = `createNode averageRanges -n averageRanges`;
+
+//  Connecting the created node and the sliders.
+
+      connectAttr -f ($slider1 + ".tx") ($nodeName + ".input1");
+      connectAttr -f ($slider1 + ".ty") ($nodeName + ".input2");
+
+      connectAttr -f ($nodeName + ".output") ($slider2 + ".tx");
+    }
+
+    else if ( $xMode && !($yMode) )
+      connectAttr -f ($slider1 + ".tx") ($slider2 + ".tx");
+
+    else if ( !($xMode) && $yMode )
+      connectAttr -f ($slider1 + ".ty") ($slider2 + ".tx");
+
+    else 
+      error "No mode determined";
+
+  } // end else <$suffix for connect>
+
+
+
+
+else
+
+//  Disconnection.
+
+
+  if ($suffix == "1dSlider") {
+
+    if ($xMode && $yMode) {
+      disconnectAttr ($slider1 + ".tx") ($slider2 + ".tx");
+      disconnectAttr ($slider1 + ".tx") ($slider2 + ".ty");
+    }
+
+    else if ( $xMode && !($yMode) )
+      disconnectAttr ($slider1 + ".tx") ($slider2 + ".tx");
+
+    else if ( !($xMode) && $yMode )
+      disconnectAttr ($slider1 + ".tx") ($slider2 + ".ty");
+
+    else 
+      error "No mode determined";
+
+  } // end if <$suffix>
+
+  else {
+
+    if ($xMode && $yMode) 
+
+//  Disconnecting the created node and the sliders.
+   advancedDisconnect2dFunc;
+
+    else if ( $xMode && !($yMode) )
+      disconnectAttr ($slider1 + ".tx") ($slider2 + ".tx");
+
+    else if ( !($xMode) && $yMode )
+      disconnectAttr ($slider1 + ".ty") ($slider2 + ".tx");
+
+    else 
+      error "No mode determined";
+
+  } // end else <$suffix for disconnect>
+
+
+
+} // end func <connectDisconnect2dFunc>
+
+
+
+
+global proc crossConnectDisconnectFunc(string $mode) {
+
+string $slidersList[] = `ls -sl`;
+string $slider1 = $slidersList[0];
+string $slider2 = $slidersList[1];
+
+if ($mode == "connect") {
+
+  connectAttr ($slider1 + ".tx") ($slider2 + ".ty");
+  connectAttr ($slider1 + ".ty") ($slider2 + ".tx");
+  
+}
+
+else {
+
+  disconnectAttr ($slider1 + ".tx") ($slider2 + ".ty");
+  disconnectAttr ($slider1 + ".ty") ($slider2 + ".tx");
+
+}
+
+}
+ 
+
+
+
+global proc emphasize2dControlFunc(float $scaleValue) {
+
+selectDeletePerSlider2dFunc("select");
+scale -r $scaleValue $scaleValue $scaleValue;
+
+}
+
+
+
+
+
+global proc string getCode2dFunc(string $name) {
+
+string $sourceNameApart[];
+int $count = tokenize ($name, "_", $sourceNameApart);
+if ($count != 2)
+  error "The naming convention is not true! <pose name>";
+
+string $code = $sourceNameApart[1];
+
+return $code;
+
+}
+

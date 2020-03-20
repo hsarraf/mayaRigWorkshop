@@ -1,0 +1,12 @@
+global proc getRigWorkshop() {
+
+source "//blackhole/MonsterAndDragon/Pre Production/Character/5-Character Setup/Mel Script/scripts/main_sources/rig_workshop/coolTools.mel";
+source "//blackhole/MonsterAndDragon/Pre Production/Character/5-Character Setup/Mel Script/scripts/main_sources/rig_workshop/skeletonNaming.mel";
+source "//blackhole/MonsterAndDragon/Pre Production/Character/5-Character Setup/Mel Script/scripts/main_sources/rig_workshop/resetTransforms";
+source "//blackhole/MonsterAndDragon/Pre Production/Character/5-Character Setup/Mel Script/scripts/main_sources/rig_workshop/weightHolding";
+source "//blackhole/MonsterAndDragon/Pre Production/Character/5-Character Setup/Mel Script/scripts/main_sources/rig_workshop/dynamicInteractions";
+
+source "//blackhole/MonsterAndDragon/Pre Production/Character/5-Character Setup/Mel Script/scripts/main_sources/rig_workshop/mainWindow";
+
+}
+getRigWorkshop;

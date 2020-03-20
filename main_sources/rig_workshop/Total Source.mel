@@ -1,0 +1,900 @@
+//-----------------------------------------------------------------//
+//-----------------------------------------------------------------//
+//	SCRIPT:	Rig WorkShop.mel	
+//	AUTHOR:	Hadi Sarraf   _   <didarvfx.co>
+//
+//	DATE:	       april / 6 / 2006   _    1385 / 1 / 17 	
+//
+//     USAGE:       <Protected only for designer>
+//-----------------------------------------------------------------//
+//-----------------------------------------------------------------//                                  
+                                  
+
+
+
+
+//  Global variables
+
+global string $iconImagesPath = "C:/Documents and Settings/All Users/Documents/sctipts_IconImages/otherIconImages/";
+
+global int $sn_mod = 1;
+global int $mc_mod = 1;
+global int $hs_mod = 1;
+global string $mc_objList[];
+
+
+// Designing the main UI <Hadi's WorkShop>
+
+if (`window -exists rigWorkshopWin`)
+  deleteUI rigWorkshopWin;
+
+window -t "Hadi's rig workshop" -wh 100 100 -tlc 10 10 rigWorkshopWin;
+
+scrollLayout;
+
+columnLayout -adj 1;
+ 
+commandLine -h 20;
+textFieldGrp -l "Character Code" -tx "1" -adj 1 -cal 1 left characterCodeControl;
+
+
+//  <Cool Tools> layout
+frameLayout -l "Cool Tools" -cl 1 -cll 1;
+  columnLayout -adj 1;
+ 
+
+columnLayout -adj 1;
+
+frameLayout -l Reorient -bs "etchedIn";
+  columnLayout -adj 1;
+
+    button -l reorient -c reorientFunc -bgc .98 .89 .785;
+    checkBox -l "Hierarchy Mode" -align left hierarchyModeControl;
+
+
+  setParent..;
+setParent..;
+
+
+frameLayout -l "RLA Rotation" -bs "etchedIn";
+  columnLayout -adj 1;
+
+    floatFieldGrp -l angle -v1 180 -cal 1 left -adj 1 angleControl;
+
+    rowLayout -nc 4;
+  
+      text -l "Which axis" -align left;
+      button -l X -c "RLAFunc x" -bgc .98 .89 .785;
+      button -l Y -c "RLAFunc y" -bgc .98 .89 .785;
+      button -l Z -c "RLAFunc z" -bgc .98 .89 .785;
+
+    setParent..;
+  setParent..;
+setParent..;
+
+
+frameLayout -l "Selection wizard <only for skin>" -bs "etchedIn";
+  columnLayout -adj 1;
+
+    button -l "Select Hierarchy" -c selectHierarchyFunc -bgc .98 .89 .785;
+    button -l "Select Invert" -c selectInvertFunc -bgc .98 .89 .785;
+    button -l "Select Tips" -c selectTipsFunc -bgc .98 .89 .785;
+
+  setParent..;
+setParent..;
+
+
+frameLayout -l "Get Proxy" -bs "etchedIn";
+  columnLayout -adj 1;
+
+    floatFieldGrp -l "Radius" -v1 3 -adj 1 -cal 1 left radiusControl;
+    floatFieldGrp -l "Subdivisions Axis" -v1 5 -adj 1 -cal 1 left subdivisionsAxisControl;
+    floatFieldGrp -l "Subdivisions Height" -v1 3 -adj 1 -cal 1 left subdivisionsHeightControl;
+    button -l "Generate Proxy" -c generateProxyFunc -bgc .98 .89 .785;
+
+  setParent..;
+setParent..;
+
+
+setParent..;
+
+
+  setParent..;
+setParent..;
+
+
+
+//  <Skeleton Naming> layout
+frameLayout -l "Skeleton Naming" -cl 1 -cll 1;
+  columnLayout -adj 1;
+ 
+
+columnLayout -adj 1;
+
+  frameLayout -l "selectionSketch" -cll 1 -bs "in";
+
+   columnLayout -adj 1;
+
+    radioButtonGrp -nrb 2 -l "which skeleton:" -la2 "rigSkeleton" "skinSkeleton" -adj 1 -cal 1 left
+                                                            -on1 "global int $sn_mod = 1;print ($sn_mod);"
+                                                            -of1 "global int $sn_mod = 2;print ($sn_mod);";
+
+   text -l "";
+
+
+
+    rowColumnLayout -nc 5 -cw 1 60 -cw 2 60 -cw 3 60 -cw 4 60 -cw 5 60;
+
+      symbolButton -w 40 -h 30 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "neck.bmp") -c "renameFunc M_neck";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_hand.bmp") -c "sn_subMembersFunc R_hand";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_arm.bmp") -c "renameFunc R_arm";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "spines.bmp") -c "renameFunc M_spine";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_arm.bmp") -c "renameFunc L_arm";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_hand.bmp") -c "sn_subMembersFunc L_hand"; 
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "root.bmp") -c "rootNameFunc";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_foot.bmp") -c "sn_subMembersFunc R_foot";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_leg.bmp") -c "renameFunc R_leg";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "pelvis.bmp") -c "pelvisNameFunc";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_leg.bmp") -c "renameFunc L_leg";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_foot.bmp") -c "sn_subMembersFunc L_foot";
+
+    setParent..;
+
+  setParent..;
+
+ setParent..;
+
+separator -h 10;
+text -l "quick convert" -align left -fn "boldLabelFont";
+button -l rig_to_skin -bgc .871 .839 .741 -c rigToSkinFunc;
+button -l skin_to_rig -bgc .871 .839 .741 -c skinToRigFunc;
+
+
+setParent..;
+
+
+  setParent..;
+setParent..;
+
+
+
+
+//  <Reset Transforms> layout
+frameLayout -l "Reset Transforms" -cl 1 -cll 1;
+  columnLayout -adj 1;
+
+
+    rowColumnLayout -nc 5 -cw 1 60 -cw 2 60 -cw 3 60 -cw 4 60 -cw 5 60;
+
+      symbolButton -w 40 -h 30 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "head.bmp") -c "resetTransformsFunc \"s_M_neck0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_arm.bmp") -c "resetTransformsFunc \"s_R_arm0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "upper.bmp") -c "resetTransformsFunc \"s_M_spine0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_arm.bmp") -c "resetTransformsFunc \"s_L_arm0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp"); 
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "root.bmp") -c "resetTransformsFunc \"s_M_root_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_leg.bmp") -c "resetTransformsFunc \"s_R_leg0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "lower.bmp") -c "resetTransformsFunc \"s_M_pelvis_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_leg.bmp") -c "resetTransformsFunc \"s_L_leg0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+    setParent..;
+
+
+
+  setParent..;
+setParent..;
+
+
+
+
+//  <Weight Holding> layout
+frameLayout -l "Weight Holding" -cl 1 -cll 1;
+  columnLayout -adj 1;
+ 
+
+columnLayout -adj 1;
+
+  frameLayout -l "Selection Sketch" -cll 1 -bs "in";
+
+   columnLayout -adj 1;
+
+    radioButtonGrp -nrb 2 -l "Hold" -la2 "Off" "On" -adj 1 -cal 1 left
+                                                            -on1 "global int $hs_mod = 0;print ($hs_mod);"
+                                                            -of1 "global int $hs_mod = 1;print ($hs_mod);";
+
+   text -l "";
+
+
+
+    rowColumnLayout -nc 5 -cw 1 60 -cw 2 60 -cw 3 60 -cw 4 60 -cw 5 60;
+string $s = `textFieldGrp -q -tx characterCodeControl`;
+
+      symbolButton -w 40 -h 30 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "neck.bmp") -c "hs_generateFunc \"s_M_neck0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_hand.bmp") -c "hs_subMembersFunc s_R_hand";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_arm.bmp") -c "hs_generateFunc \"s_R_arm0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "upper.bmp") -c "hs_generateFunc \"s_M_spine0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_arm.bmp") -c "hs_generateFunc \"s_L_arm0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_hand.bmp") -c "hs_subMembersFunc s_L_hand"; 
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "lower.bmp") -c "hs_generateFunc \"s_M_pelvis_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_foot.bmp") -c "hs_subMembersFunc s_R_foot";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_leg.bmp") -c "hs_generateFunc \"s_R_leg0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_leg.bmp") -c "hs_generateFunc \"s_L_leg0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_foot.bmp") -c "hs_subMembersFunc s_L_foot";
+
+    setParent..;
+
+  setParent..;
+
+ setParent..;
+
+separator -h 10;
+text -l "Quick Holding" -align left -fn "boldLabelFont";
+button -l "All Hold Off" -bgc .99 .9 .69 -c "global int $hs_mod = 0;hs_generateFunc \"s_M_root_J*\";";
+button -l "All Hold On" -bgc .99 .9 .69  -c "global int $hs_mod = 1;hs_generateFunc \"s_M_root_J*\";";
+
+setParent..;
+
+
+  setParent..;
+setParent..;
+
+
+
+//  <Dynamic Interactions> layout
+frameLayout -l "Dynamic Interactions" -cl 1 -cll 1;
+  columnLayout -adj 1;
+ 
+
+columnLayout -adj 1;
+  
+    floatFieldGrp -l "Time Delay" -v1 .1 -cal 1 left -adj 1 timeDelayControl;
+	floatFieldGrp -l "Smooth Value" -v1 .05 -cal 1 left -adj 1 smoothValueControl;
+	
+	separator -h 20;
+	  
+    intFieldGrp -l "Start Time" -v1 1 -cal 1 left -adj 1 startTimeControl;
+    intFieldGrp -l "End Time" -v1 24 -cal 1 left -adj 1 endTimeControl;
+	
+	separator -h 20;
+	
+	button -l "Set List" -bgc 1 .9 .8 -c setListFunc;
+	button -l "Select List" -bgc 1 .9 .8 -c "select $mc_objList";
+	button -l "Delete List" -bgc 1 .9 .8 -c deleteListFunc;
+	button -l "Freeze List" -bgc 1 .9 .8 -c freezeListFunc;
+	button -l "Delete keys" -bgc 1 .9 .8 -c deleteKeysFunc;
+	button -l "generate" -bgc 1 .9 .8 -c dr_generateFunc;
+
+      separator -h 20;
+
+      text -l "status..." -fn "boldLabelFont" -align left;
+      progressBar progressBarControl;	
+
+
+  setParent..;
+setParent..;
+
+
+showWindow rigWorkshopWin;
+
+
+
+
+//  Definitions of procedurces
+
+//------------------Cool Tools <start>-----------------//
+
+proc reorientFunc() {
+
+
+string $jointSelected[] = `ls -sl -type joint`;
+int $mod = `checkBox -q -v hierarchyModeControl`;
+
+if ($mod == 0)
+  joint -e -oj xyz -secondaryAxisOrient yup -zso $jointSelected;
+else
+  joint -e -oj xyz -secondaryAxisOrient yup -ch -zso $jointSelected; 
+
+}
+
+
+proc RLAFunc(string $axis) {
+
+string $jointSelected[] = `ls -sl -type joint`;
+float $angle = `floatFieldGrp -q -v1 angleControl`;
+
+ switch ($axis) {
+
+  case "x":
+    rotate -r -os ($angle) 0 0 ($jointSelected[0] + ".rotateAxis");
+  break;
+
+  case "y":
+    rotate -r -os 0 ($angle) 0 ($jointSelected[0] + ".rotateAxis");
+  break;
+
+  case "z":
+    rotate -r -os 0 0 ($angle) ($jointSelected[0] + ".rotateAxis");
+  break;
+
+ }
+
+}
+
+
+proc selectHierarchyFunc() {
+
+  string $code = `textFieldGrp -q -tx characterCodeControl`; 
+ 
+  select ("s_M_root_J_" + $code); 
+  select -hi;
+  string $jList[] = `ls -sl -type joint`;
+  select $jList;
+
+}
+
+proc selectInvertFunc() {
+
+  string $invertList[] = `ls -sl -type joint`;
+  selectHierarchyFunc;
+  select -d $invertList;
+
+}
+
+  
+proc selectTipsFunc() {
+
+  string $code = `textFieldGrp -q -tx characterCodeControl`;
+  select ("*Tip*" + $code);
+
+}
+
+
+
+proc generateProxyFunc() {
+
+string $answer = `confirmDialog -t "Note" -m "Make sure the character skeleton is named convensionally!\nContinue?"
+                        -b "Yes" -b "No" -db "Yes" -cb "No" -ds "No"`;
+
+if ($answer == "Yes") {
+
+string $code = `textFieldGrp -q -tx characterCodeControl`;
+
+getProxyFunc ("M_spine*_J_" + $code) 1;
+
+getProxyFunc ("M_neck*_J_" + $code) 0;
+
+getProxyFunc ("R_arm*_J_" + $code) 0;
+getProxyFunc ("L_arm*_J_" + $code) 0;
+
+getProxyFunc ("R_leg*_J_" + $code) 0;
+getProxyFunc ("L_leg*_J_" + $code) 0;
+
+//  Grouping the proxies.
+//string $code = `textFieldGrp -q -tx characterCodeControl`;
+//select ("proxy*" + $code);
+//group -n ("proxies_" + $code);
+select -cl;
+ 
+}
+
+else
+  error "Generating proxies falied!";
+
+}
+
+
+
+proc getProxyFunc (string $firstJointName, int $flag) {
+
+select -r $firstJointName;
+select -hi;
+
+if ($flag) {
+select -d "M_neck*_J_1";
+select -d "R_arm*_J_1";
+select -d "L_arm*_J_1";
+select -d "R_leg*_J_1";
+select -d "L_leg*_J_1";
+}
+
+string $jointsList[] = `ls -sl -type joint`;
+int $jointsCount = `size $jointsList`;
+
+int $counter;
+for ($counter = 0 ; $counter < $jointsCount - 1 ; $counter++) {
+
+  vector $jointPose1 = `xform -q -t -ws $jointsList[$counter]`;
+  vector $jointPose2 = `xform -q -t -ws $jointsList[$counter + 1]`;
+
+  vector $distanceVector = $jointPose2 - $jointPose1;
+  float $distance = `mag $distanceVector`;
+
+  vector $jointAngle = `xform -q -ro -ws $jointsList[$counter]`;
+
+  string $proxyName = "proxy_" + $jointsList[$counter];
+
+  createCylinderFunc $distance $jointAngle $jointPose1 $proxyName $jointsList[$counter];
+
+  //print ($jointAngle + "\n");
+
+}
+
+}
+
+
+
+
+proc createCylinderFunc (float $height, vector $angle, vector $position, string $proxyName, string $jointName) {
+
+float $radius = `floatFieldGrp -q -v1 radiusControl`;
+float $subdivisionsAxis = `floatFieldGrp -q -v1 subdivisionsAxisControl`;
+float $subdivisionsHeight = `floatFieldGrp -q -v1 subdivisionsHeightControl`;
+
+polyCylinder -r $radius -h $height -sx $subdivisionsAxis -sy $subdivisionsHeight -sz 1 -n $proxyName;
+move -r 0 (-$height / 2) 0 $proxyName;
+move -r 0 ($height / 2) 0 ($proxyName + ".scalePivot") ($proxyName + ".rotatePivot");
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+
+rotate -r 0 0 90;
+makeIdentity -apply true -t 1 -r 1 -s 1 -n 0;
+rotate -r ($angle.x) ($angle.y) ($angle.z);
+
+move -r ($position.x) ($position.y) ($position.z);
+
+parent $proxyName $jointName;
+
+}
+
+
+
+
+
+
+//------------------Cool Tools <end>-----------------//
+
+
+
+//------------------Skeleton Naming <start>-----------------//
+
+
+proc renameFunc(string $prefix) {
+
+  global int $sn_mod;
+  if ($sn_mod != 1) 
+    $prefix = ("s_" + $prefix);
+
+  select -hi;
+  string $list[] = `ls -sl -type joint`;
+  int $listCount = `size $list`;
+  int $counter;
+ 
+  string $code = `textFieldGrp -q -tx characterCodeControl`;
+
+  for ($counter = 0 ; $counter < $listCount ; $counter++) {
+
+    string $oldName = $list[$counter];
+    rename $oldName ($prefix + $counter + "_J_" + $code);
+
+  }
+  rename $list[$counter - 1] ($prefix + "Tip_J_" + $code);
+
+  select -cl;
+
+}
+
+
+proc rigToSkinFunc() {
+
+  select -hi;
+  string $list[] = `ls -sl -type joint`;
+  int $listCount = `size $list`;
+  string $oldName;
+
+  for ($oldName in $list) {
+    string $newName = ("s_" + $oldName);
+    rename $oldName $newName;
+
+  }
+
+select -cl;
+
+}
+
+
+proc skinToRigFunc() {
+
+  select -hi;
+  string $list[] = `ls -sl -type joint`;
+  int $listCount = `size $list`;
+  string $oldName;
+
+  string $oldNameApart[];
+
+  for ($oldName in $list) {
+    int $count = `tokenize $oldName "_" $oldNameApart`;
+    if ($count != 5) 
+      error "Please bilakh!!!";
+    else {
+      string $newName = ($oldNameApart[1] + "_" + $oldNameApart[2] + "_" + $oldNameApart[3] + "_" + $oldNameApart[4]);
+      rename $oldName $newName;
+    }
+
+  }
+
+select -cl;
+
+}
+
+
+
+
+
+proc sn_subMembersFunc (string $LR) {
+	
+  global string $iconImagesPath;
+
+	if (`window -exists sn_subMembersWin`)
+		deleteUI sn_subMembersWin;
+	window -t "subMembers Window" -wh 100 100 -tlc 10 10 sn_subMembersWin;
+	rowColumnLayout -nc 5 -cw 1 60 -cw 2 60 -cw 3 60 -cw 4 60 -cw 5 60;
+	
+      global string $pinky;
+        $pinky = $LR + "Pinky";
+      global string $ring;
+        $ring = $LR + "Ring";
+      global string $middle;
+        $middle = $LR + "Middle";
+      global string $index;
+        $index = $LR + "Index";
+      global string $thumb;
+        $thumb = $LR + "Thumb";
+      global string $palm;
+        $palm = $LR;      
+
+      symbolButton -w 40 -h 30 -i ($iconImagesPath + "pinky.bmp") -c "global string $pinky; renameFunc $pinky;"; 
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "ring.bmp") -c "global string $ring; renameFunc $ring;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "middle.bmp") -c "global string $middle; renameFunc $middle;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "index.bmp") -c "global string $index; renameFunc $index;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "thumb.bmp") -c "global string $thumb; renameFunc $thumb;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "palm.bmp") -c "global string $palm; renameFunc $palm;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp"); 
+	  
+
+	 
+	 showWindow sn_subMembersWin;
+	 
+}
+
+proc rootNameFunc() {
+	
+	global int $sn_mod;
+
+      string $code = `textFieldGrp -q -tx characterCodeControl`;
+
+	if ($sn_mod == 1)
+		rename ("M_root_J_" + $code);
+	else
+		rename ("s_M_root_J_" + $code);
+
+}
+
+proc pelvisNameFunc() {
+	
+	global int $sn_mod;
+
+      string $code = `textFieldGrp -q -tx characterCodeControl`;
+
+	if ($sn_mod == 1)
+		rename ("M_pelvis_J_" + $code);
+	else
+		rename ("s_M_pelvis_J_" + $code);
+
+}
+
+
+//------------------Skeleton Naming <end>-----------------//
+
+
+//------------------Reset Tranfroms <start>-----------------//
+
+
+proc resetTransformsFunc(string $name) {
+
+  select $name;
+  select -hi;
+  string $jList[] = `ls -sl -type joint`;
+  string $jName;
+
+  for ($jName in $jList) {
+
+    setAttr ($jName + ".r") 0 0 0;
+    setAttr ($jName + ".s") 1 1 1;
+
+  }
+
+  select -cl;
+
+}
+
+
+//------------------Reset Tranfroms <end>-----------------//
+
+
+//------------------Weight Holding <start>-----------------//
+
+
+proc hs_subMembersFunc (string $prefix) {
+
+  global string $iconImagesPath;
+	
+       string $code = `textFieldGrp -q -tx characterCodeControl`;
+
+	  global string $hs_pinky;
+          $hs_pinky = ($prefix + "Pinky0_J_" + $code);
+	  global string $hs_ring;
+          $hs_ring = ($prefix + "Ring0_J_" + $code);
+	  global string $hs_middle;
+          $hs_middle = ($prefix + "Middle0_J_" + $code);
+	  global string $hs_index;
+          $hs_index = ($prefix + "Index0_J_" + $code);
+	  global string $hs_thumb;
+          $hs_thumb = ($prefix + "Thumb0_J_" + $code);
+	  global string $hs_palm;
+          $hs_palm = ($prefix + "0_J_" + $code);
+
+	if (`window -exists hs_subMembersWin`)
+		deleteUI hs_subMembersWin;
+	window -t "SubMembers Window" -wh 100 100 -tlc 10 10 hs_subMembersWin;
+	rowColumnLayout -nc 5 -cw 1 60 -cw 2 60 -cw 3 60 -cw 4 60 -cw 5 60;
+	  
+	symbolButton -w 40 -h 30 -i ($iconImagesPath + "pinky.bmp") -c "global string $hs_pinky; hs_generateFunc $hs_pinky;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "ring.bmp") -c "global string $hs_ring; hs_generateFunc $hs_ring;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "middle.bmp") -c "global string $hs_middle; hs_generateFunc $hs_middle;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "index.bmp") -c "global string $hs_index; hs_generateFunc $hs_index;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "thumb.bmp") -c "global string $hs_thumb; hs_generateFunc $hs_thumb;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "palm.bmp") -c "global string $hs_palm; hs_generateFunc $hs_palm;";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp"); 
+	  
+
+	 
+	 showWindow hs_subMembersWin;
+	 
+}
+
+
+proc hs_generateFunc(string $jointName) {
+	
+	global int $hs_mod;
+
+//  Creating the selection list.
+
+	select $jointName;
+	select -hi;
+
+string $jointsList[] = `ls -sl -type joint`;
+string $jointName;
+
+//string $connectionsList[];
+string $connectionName;
+
+int $counter = 0;
+
+select -cl;
+string $skinClustersList[] = `ls -sl`;
+//print ($jointsList);
+
+//  Filling the skinClusters list.
+for ($jointName in $jointsList) {
+	
+	string $connectionsList[] = `listConnections -s 0 -d 1 $jointName`;
+	//print ($jointName + "\n");
+	//print ($connectionsList);
+	
+	for ($connectionName in $connectionsList) 
+		if ($connectionName == "skinCluster1") {
+			$skinClustersList[$counter] = $jointName;
+			$counter++;
+			break;
+	}
+	
+}
+
+//print ($skinClustersList);
+
+string $skinClusterName;
+for ($skinClusterName in $skinClustersList)
+	setAttr ($skinClusterName + ".liw") ($hs_mod);
+
+} // end func <hs_generateFunc>
+
+
+//------------------Weight Holding <end>-----------------//
+
+
+//------------------Dynamic Interactions <start>-----------------//
+
+
+proc dr_generateFunc() {
+
+global string $mc_objList[];
+select -r $mc_objList;
+
+
+	if (`size $mc_objList` == 0) {
+		confirmDialog -t "Note" -m "The list is empty!\nSet the list and attemp again." -b "Ok"; 
+		error "generating failed!";
+	}
+	else {  
+		
+
+	string $warning = `confirmDialog -t "A Warning" -m "Be sure to set the correct list!\nUnless othewise, delete the list and set again.\nContinue?" 
+		                           -b "Yes" -b "No" -db "Yes" -cb "No" -ds "No"`;
+	if ($warning == "Yes") {
+  
+select $mc_objList;		
+int $objCount = `size $mc_objList`;
+
+float $smoothIndex = 0;
+
+int $objCounter;
+int $timeCounter;
+
+int $startTime = `intFieldGrp -q -v1 startTimeControl`;  
+int $endTime = `intFieldGrp -q -v1 endTimeControl`;  
+
+float $progressBarLength = $endTime - $startTime;
+//print ($progressBarLength);
+progressBar -e -max $progressBarLength progressBarControl;
+
+float $timeDelay = `floatFieldGrp -q -v1 timeDelayControl`;
+float $smoothValue = `floatFieldGrp -q -v1 smoothValueControl`;
+
+
+select -d $mc_objList[0];
+
+for ($timeCounter = $startTime ; $timeCounter <= $endTime ; $timeCounter++) {
+  
+  currentTime $timeCounter;
+  $smoothIndex += $smoothValue;
+
+
+  for ($objCounter = 0 ; $objCounter < $objCount - 1 ; $objCounter++) {
+
+    float $zPos = `getAttr -t ($timeCounter - $timeDelay - $smoothIndex) ($mc_objList[$objCounter] + ".tz")`;
+    float $yPos = `getAttr -t ($timeCounter - $timeDelay - $smoothIndex) ($mc_objList[$objCounter] + ".ty")`;
+    float $xPos = `getAttr -t ($timeCounter - $timeDelay - $smoothIndex) ($mc_objList[$objCounter] + ".tx")`;
+
+    setAttr ($mc_objList[$objCounter + 1] + ".tz") $zPos;
+    setAttr ($mc_objList[$objCounter + 1] + ".ty") $yPos;
+    setAttr ($mc_objList[$objCounter + 1] + ".tx") $xPos;
+
+  }
+    setKeyframe;
+
+    progressBar -e -pr $timeCounter progressBarControl;
+
+} 
+
+	} // end if <warning>
+	else
+		error "proccess failed!";
+	
+  } // end else <note>
+  
+progressBar -e -pr 0 progressBarControl;
+} // end func <dr_generateFunc>
+
+
+proc setListFunc() {
+	
+	global string $mc_objList[];
+    $mc_objList = `ls -sl -tr`;
+	select -cl;
+	
+}
+
+
+proc deleteListFunc() {
+	
+    global string $mc_objList[];
+	string $warning = `confirmDialog -t "A Warning" -m "Are you sure to delete the list?" 
+		                           -b "Yes" -b "No" -db "Yes" -cb "No" -ds "No"`;
+	if ($warning == "Yes") {
+	  select -cl;
+	  $mc_objList = `ls -sl`;
+	}
+	else 
+		error "Deleting the list failed!";
+	
+}
+
+
+proc freezeListFunc() {
+	
+    global string $mc_objList[];
+	if (`size $mc_objList` == 0) {
+		confirmDialog -t "Note" -m "The list is empty!\nSet the list and attemp again." -b "Ok"; 
+		error "Freezing the list failed!";
+	}
+	else {                          
+	  makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 $mc_objList;
+	  select -cl;
+	}
+
+}
+
+
+proc deleteKeysFunc() {
+	
+    global string $mc_objList[];
+	if (`size $mc_objList` == 0) {
+		confirmDialog -t "Note" -m "The list is empty!\nSet the list and attemp again." -b "Ok"; 
+		error "deleting the keys failed!";
+	}
+	else {                          
+	string $warning = `confirmDialog -t "A Warning" -m "Are you sure to delete the keys?" 
+		                           -b "Yes" -b "No" -db "Yes" -cb "No" -ds "No"`;
+	if ($warning == "Yes") {
+
+         progressBar -e -s `progressBar -q -max progressBarControl` progressBarControl;
+         
+	  select $mc_objList;
+	  select -d $mc_objList[0];
+	  int $counter;
+	  int $startTime = `intFieldGrp -q -v1 startTimeControl`;
+	  int $endTime = `intFieldGrp -q -v1 endTimeControl`;
+	  for ($counter = $endTime ; $counter >= $startTime ; $counter--) {
+		  currentTime $counter;
+		  timeSliderClearKey;
+
+                progressBar -e -pr ($counter) progressBarControl;
+	  }
+
+progressBar -e -pr 0 progressBarControl;
+
+}
+          
+        else 
+          error "Deleting the kes failed!";
+
+
+	  select -cl;
+
+	} // end else <note>
+
+} // end func <deleteKeysFunc>
+
+
+//------------------Dynamic Interactions <end>-----------------//

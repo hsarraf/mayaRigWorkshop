@@ -1,0 +1,63 @@
+//-------  Selection luncher codes  <start>  ----------------------------------------------------------
+
+
+
+//  Selection based on Icon name. (Through the ss window)
+global proc selectFunc(string $prefix) {
+
+  string $ss_code = `textFieldGrp -q -tx ss_characterCodeControl`;
+  string $iconName = $prefix + "_" + $ss_code;
+
+  select -cl;
+  select $iconName;
+
+}
+
+
+
+//  Lunching the related window as soon as the icon selected.
+global proc UIsLuncherFunc() {
+
+string $selectedList[] = `ls -sl`;
+string $selected = $selectedList[0];
+
+switch ($selected) {
+
+case "M_head_1":
+  head_1_UIFunc;
+break;
+
+case "M_upper_1":
+  upper_1_UIFunc;
+break;
+
+case "M_lower_1":
+  lower_1_UIFunc;
+break;
+
+}
+
+}
+
+//----------  Icon properties window codes <start> -----------
+
+
+global proc head_1_UIFunc() {
+
+if (`window -ex head1ToolsWin`)
+  deleteUI head1ToolsWin;
+
+window -t "Head Tools" head1ToolsWin;
+columnLayout -adj 1;
+
+button -l head_1;
+
+showWindow head1ToolsWin;
+
+}
+
+//----------  Icon properties window codes <end> -----------
+
+
+
+//-------  Selection luncher codes  <end>  ----------------------------------------------------------

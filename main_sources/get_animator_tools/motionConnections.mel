@@ -1,0 +1,56 @@
+global proc mc_generateFunc(string $jointName) {
+
+global int $mc_mod;
+string $code = `textFieldGrp -q -tx ss_characterCodeControl`;
+
+	  select -cl;
+        $jointName = ($jointName + "_" + $code);
+	  select -r $jointName;
+	  select -add ("s_" + $jointName);
+	  
+	  select -hi;
+	  
+	  string $totalList[] = `ls -sl -type joint`;
+	  int $totalListCount = `size $totalList`;
+	  string $sourceList[];
+	  string $targetList[];
+	  
+	  //  Testing the two hirerarchies to be equvalent.
+
+	  if ( ($totalListCount % 2) != 0 ) {
+  		  confirmDialog -t "A Fatal Error" -m "The two hierarchies are not equivalent!\nInsert OK and immediately call the rigger." -b "OK";
+	      error "The two hierarchies are not equivalent";
+	  }
+	  
+	  int $totalListCountHalf = $totalListCount / 2;
+
+if ($mc_mod == 1) {
+
+//  Filling the two lists(source & target).
+    int $counter;
+	for ($counter = 0 ; $counter < $totalListCountHalf ; $counter++) {
+		
+		connectAttr ($totalList[$counter] + ".t") ($totalList[$counter + $totalListCountHalf] + ".t");
+		connectAttr ($totalList[$counter] + ".r") ($totalList[$counter + $totalListCountHalf] + ".r");
+		connectAttr ($totalList[$counter] + ".s") ($totalList[$counter + $totalListCountHalf] + ".s");
+		
+  		
+	}
+  }  //end if <mod>
+
+  else {
+	  
+//  Filling the two lists(source & target).
+    int $counter;
+	for ($counter = 0 ; $counter < $totalListCountHalf ; $counter++) {
+		
+		disconnectAttr ($totalList[$counter] + ".t") ($totalList[$counter + $totalListCountHalf] + ".t");
+		disconnectAttr ($totalList[$counter] + ".r") ($totalList[$counter + $totalListCountHalf] + ".r");
+		disconnectAttr ($totalList[$counter] + ".s") ($totalList[$counter + $totalListCountHalf] + ".s");
+		
+  		
+	}
+	
+  }  //end else <mod>
+
+}  //end func <mc_generateFunc>

@@ -1,0 +1,24 @@
+//-----------------------------------------------------------------//
+//-----------------------------------------------------------------//
+//	SCRIPT:	Rig WorkShop.mel	
+//	AUTHOR:	Hadi Sarraf   _   <didarvfx.co>
+//
+//	DATE:	       april / 6 / 2006   _    1385 / 1 / 17 	
+//
+//     USAGE:       <Protected only for designer>
+//-----------------------------------------------------------------//
+//-----------------------------------------------------------------//  
+
+
+
+global proc getRigWorkshop() {
+
+source "D:/Hadi`s workshop/rigging_tests/scripts/sources/rig_workshop/coolTools.mel";
+source "D:/Hadi`s workshop/rigging_tests/scripts/sources/rig_workshop/skeletonNaming.mel";
+source "D:/Hadi`s workshop/rigging_tests/scripts/sources/rig_workshop/resetTransforms";
+source "D:/Hadi`s workshop/rigging_tests/scripts/sources/rig_workshop/weightHolding";
+source "D:/Hadi`s workshop/rigging_tests/scripts/sources/rig_workshop/dynamicInteractions";
+
+source "D:/Hadi`s workshop/rigging_tests/scripts/sources/rig_workshop/mainWindow";
+
+}

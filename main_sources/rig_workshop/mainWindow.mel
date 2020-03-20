@@ -1,0 +1,303 @@
+//-----------------------------------------------------------------//
+//-----------------------------------------------------------------//
+//	SCRIPT:	Rig WorkShop.mel	
+//	AUTHOR:	Hadi Sarraf   _   <didarvfx.co>
+//
+//	DATE:	       april / 6 / 2006   _    1385 / 1 / 17 	
+//
+//     USAGE:       <Protected only for designer>
+//-----------------------------------------------------------------//
+//-----------------------------------------------------------------//                                  
+                                  
+
+
+
+
+//  Global variables
+
+global string $iconImagesPath = "//blackhole/MonsterAndDragon/Pre Production/Character/5-Character Setup/Mel Script/scripts/UI_images/iconImages/";
+
+global int $sn_mod = 1;
+global int $mc_mod = 1;
+global int $hs_mod = 1;
+global string $mc_objList[];
+
+
+// Designing the main UI <Hadi's WorkShop>
+
+if (`window -exists rigWorkshopWin`)
+  deleteUI rigWorkshopWin;
+
+window -t "Hadi's rig workshop" -wh 100 100 -tlc 10 10 rigWorkshopWin;
+
+scrollLayout;
+
+columnLayout -adj 1;
+ 
+commandLine -h 20;
+textFieldGrp -l "Character Code" -tx "1" -adj 1 -cal 1 left characterCodeControl;
+
+
+//  <Cool Tools> layout
+frameLayout -l "Cool Tools" -cl 1 -cll 1;
+  columnLayout -adj 1;
+ 
+
+columnLayout -adj 1;
+
+frameLayout -l Reorient -bs "etchedIn";
+  columnLayout -adj 1;
+
+    button -l reorient -c reorientFunc -bgc .98 .89 .785;
+    checkBox -l "Hierarchy Mode" -align left hierarchyModeControl;
+
+
+  setParent..;
+setParent..;
+
+
+frameLayout -l "RLA Rotation" -bs "etchedIn";
+  columnLayout -adj 1;
+
+    floatFieldGrp -l angle -v1 180 -cal 1 left -adj 1 angleControl;
+
+    rowLayout -nc 4;
+  
+      text -l "Which axis" -align left;
+      button -l X -c "RLAFunc x" -bgc .98 .89 .785;
+      button -l Y -c "RLAFunc y" -bgc .98 .89 .785;
+      button -l Z -c "RLAFunc z" -bgc .98 .89 .785;
+
+    setParent..;
+  setParent..;
+setParent..;
+
+
+frameLayout -l "Selection wizard <only for skin>" -bs "etchedIn";
+  columnLayout -adj 1;
+
+    button -l "Select Hierarchy" -c selectHierarchyFunc -bgc .98 .89 .785;
+    button -l "Select Invert" -c selectInvertFunc -bgc .98 .89 .785;
+    button -l "Select Tips" -c selectTipsFunc -bgc .98 .89 .785;
+
+  setParent..;
+setParent..;
+
+
+frameLayout -l "Get Proxy" -bs "etchedIn";
+  columnLayout -adj 1;
+
+    floatFieldGrp -l "Radius" -v1 3 -adj 1 -cal 1 left radiusControl;
+    floatFieldGrp -l "Subdivisions Axis" -v1 5 -adj 1 -cal 1 left subdivisionsAxisControl;
+    floatFieldGrp -l "Subdivisions Height" -v1 3 -adj 1 -cal 1 left subdivisionsHeightControl;
+    button -l "Generate Proxy" -c generateProxyFunc -bgc .98 .89 .785;
+
+  setParent..;
+setParent..;
+
+
+setParent..;
+
+
+  setParent..;
+setParent..;
+
+
+
+//  <Skeleton Naming> layout
+frameLayout -l "Skeleton Naming" -cl 1 -cll 1;
+  columnLayout -adj 1;
+ 
+
+columnLayout -adj 1;
+
+  frameLayout -l "selectionSketch" -cll 1 -bs "in";
+
+   columnLayout -adj 1;
+
+    radioButtonGrp -nrb 2 -l "which skeleton:" -la2 "rigSkeleton" "skinSkeleton" -adj 1 -cal 1 left
+                                                            -on1 "global int $sn_mod = 1;print ($sn_mod);"
+                                                            -of1 "global int $sn_mod = 2;print ($sn_mod);";
+
+   text -l "";
+
+
+
+    rowColumnLayout -nc 5 -cw 1 60 -cw 2 60 -cw 3 60 -cw 4 60 -cw 5 60;
+
+      symbolButton -w 40 -h 30 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "neck.bmp") -c "renameFunc M_neck";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_hand.bmp") -c "sn_subMembersFunc R_hand";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_arm.bmp") -c "renameFunc R_arm";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "spines.bmp") -c "renameFunc M_spine";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_arm.bmp") -c "renameFunc L_arm";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_hand.bmp") -c "sn_subMembersFunc L_hand"; 
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "root.bmp") -c "rootNameFunc";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_foot.bmp") -c "sn_subMembersFunc R_foot";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_leg.bmp") -c "renameFunc R_leg";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "pelvis.bmp") -c "pelvisNameFunc";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_leg.bmp") -c "renameFunc L_leg";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_foot.bmp") -c "sn_subMembersFunc L_foot";
+
+    setParent..;
+
+  setParent..;
+
+ setParent..;
+
+separator -h 10;
+text -l "quick convert" -align left -fn "boldLabelFont";
+button -l rig_to_skin -bgc .871 .839 .741 -c rigToSkinFunc;
+button -l skin_to_rig -bgc .871 .839 .741 -c skinToRigFunc;
+
+
+setParent..;
+
+
+  setParent..;
+setParent..;
+
+
+
+
+//  <Reset Transforms> layout
+frameLayout -l "Reset Transforms" -cl 1 -cll 1;
+  columnLayout -adj 1;
+
+
+    rowColumnLayout -nc 5 -cw 1 60 -cw 2 60 -cw 3 60 -cw 4 60 -cw 5 60;
+
+      symbolButton -w 40 -h 30 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "head.bmp") -c "resetTransformsFunc \"s_M_neck0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_arm.bmp") -c "resetTransformsFunc \"s_R_arm0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "upper.bmp") -c "resetTransformsFunc \"s_M_spine0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_arm.bmp") -c "resetTransformsFunc \"s_L_arm0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp"); 
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "root.bmp") -c "resetTransformsFunc \"s_M_root_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_leg.bmp") -c "resetTransformsFunc \"s_R_leg0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "lower.bmp") -c "resetTransformsFunc \"s_M_pelvis_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_leg.bmp") -c "resetTransformsFunc \"s_L_leg0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+    setParent..;
+
+
+
+  setParent..;
+setParent..;
+
+
+
+
+//  <Weight Holding> layout
+frameLayout -l "Weight Holding" -cl 1 -cll 1;
+  columnLayout -adj 1;
+ 
+
+columnLayout -adj 1;
+
+  frameLayout -l "Selection Sketch" -cll 1 -bs "in";
+
+   columnLayout -adj 1;
+
+    radioButtonGrp -nrb 2 -l "Hold" -la2 "Off" "On" -adj 1 -cal 1 left
+                                                            -on1 "global int $hs_mod = 0;print ($hs_mod);"
+                                                            -of1 "global int $hs_mod = 1;print ($hs_mod);";
+
+   text -l "";
+
+
+
+    rowColumnLayout -nc 5 -cw 1 60 -cw 2 60 -cw 3 60 -cw 4 60 -cw 5 60;
+string $s = `textFieldGrp -q -tx characterCodeControl`;
+
+      symbolButton -w 40 -h 30 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "neck.bmp") -c "hs_generateFunc \"s_M_neck0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_hand.bmp") -c "hs_subMembersFunc s_R_hand";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_arm.bmp") -c "hs_generateFunc \"s_R_arm0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "upper.bmp") -c "hs_generateFunc \"s_M_spine0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_arm.bmp") -c "hs_generateFunc \"s_L_arm0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_hand.bmp") -c "hs_subMembersFunc s_L_hand"; 
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "lower.bmp") -c "hs_generateFunc \"s_M_pelvis_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_foot.bmp") -c "hs_subMembersFunc s_R_foot";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "R_leg.bmp") -c "hs_generateFunc \"s_R_leg0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_leg.bmp") -c "hs_generateFunc \"s_L_leg0_J*\"";
+      symbolButton -w 40 -h 70 -i ($iconImagesPath + "L_foot.bmp") -c "hs_subMembersFunc s_L_foot";
+
+    setParent..;
+
+  setParent..;
+
+ setParent..;
+
+separator -h 10;
+text -l "Quick Holding" -align left -fn "boldLabelFont";
+button -l "All Hold Off" -bgc .99 .9 .69 -c "global int $hs_mod = 0;hs_generateFunc \"s_M_root_J*\";";
+button -l "All Hold On" -bgc .99 .9 .69  -c "global int $hs_mod = 1;hs_generateFunc \"s_M_root_J*\";";
+
+setParent..;
+
+
+  setParent..;
+setParent..;
+
+
+
+//  <Dynamic Interactions> layout
+frameLayout -l "Dynamic Interactions" -cl 1 -cll 1;
+  columnLayout -adj 1;
+ 
+
+columnLayout -adj 1;
+  
+    floatFieldGrp -l "Time Delay" -v1 .1 -cal 1 left -adj 1 timeDelayControl;
+	floatFieldGrp -l "Smooth Value" -v1 .05 -cal 1 left -adj 1 smoothValueControl;
+	
+	separator -h 20;
+	  
+    intFieldGrp -l "Start Time" -v1 1 -cal 1 left -adj 1 startTimeControl;
+    intFieldGrp -l "End Time" -v1 24 -cal 1 left -adj 1 endTimeControl;
+	
+	separator -h 20;
+	
+	button -l "Set List" -bgc 1 .9 .8 -c setListFunc;
+	button -l "Select List" -bgc 1 .9 .8 -c "select $mc_objList";
+	button -l "Delete List" -bgc 1 .9 .8 -c deleteListFunc;
+	button -l "Freeze List" -bgc 1 .9 .8 -c freezeListFunc;
+	button -l "Delete keys" -bgc 1 .9 .8 -c deleteKeysFunc;
+	button -l "generate" -bgc 1 .9 .8 -c dr_generateFunc;
+
+      separator -h 20;
+
+      text -l "status..." -fn "boldLabelFont" -align left;
+      progressBar progressBarControl;	
+
+
+  setParent..;
+setParent..;
+
+
+showWindow rigWorkshopWin;

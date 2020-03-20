@@ -1,0 +1,285 @@
+global string $path_1 = "D:/poses_source/Ghool/";
+global string $path_2 = "D:/poses_source/Ejdeha/";
+global string $path_3 = "D:/poses_source/Khosro/";
+
+
+
+global proc lunchListFunc() {
+
+global string $path_1;
+global string $path_2;
+global string $path_3;
+
+string $input = `textFieldGrp -q -tx lunchListControl`;
+
+switch ($input) {
+
+//  Code test.
+
+  case "1":
+    listPosesFunc "Ghool" $path_1;
+  break;
+
+  case "2":
+    listPosesFunc "Ejdeha" $path_2;
+  break;
+
+  case "3":
+    listPosesFunc "Khosro" $path_3;
+  break;
+
+  default:
+    lunchPosePerNameFunc ($input);
+  break;
+
+}
+
+}
+
+
+
+
+
+global proc lunchPosePerNameFunc (string $poseName) {
+
+global string $path_1;
+global string $path_2;
+global string $path_3;
+
+string $poseNameApart[];
+int $count = `tokenize $poseName "_" $poseNameApart`;
+
+if ($count != 2)
+  error "Please bilakh!!!";
+else {
+
+  string $codeString = $poseNameApart[1];
+  int $code = int ($codeString);
+  
+  switch ($code) {
+    case 1:
+      getPosePerNameFunc ($path_1 + $poseName + ".mb") $poseName;
+    break;
+    case 2:
+      getPosePerNameFunc ($path_2 + $poseName + ".mb") $poseName;
+    break;
+    case 3:
+      getPosePerNameFunc ($path_3 + $poseName + ".mb") $poseName;
+    break;
+  } // end switch
+
+} // end else <$count>
+
+} // end func <lunchPosePerNameFunc>
+
+
+
+
+global proc getPosePerNameFunc (string $fullPath, string $poseName) {
+
+file -import -type "mayaBinary" -pr ($fullPath);
+
+select -r $poseName;
+
+set1dControlFunc;
+prepare1dControlFunc;
+delete $poseName;
+select -r ($poseName + "_1dControl");
+
+} // end func <getPosePerNameFunc>
+
+
+
+
+
+global proc listPosesFunc (string $characterName, string $path) {
+
+global string $g_path;
+$g_path = $path;
+
+global string $poseFilesList[];
+$poseFilesList = `getFileList -fld $path -fs "*.mb"`;
+string $poseFile;
+int $poseFilesCount = `size $poseFilesList`;
+
+string $winTitle = $characterName + " Poses List";
+string $winName = $characterName + "PosesListWin";
+
+//  Lunching the window.
+if (`window -ex listWin`)
+  deleteUI listWin;
+
+window -t $winTitle listWin;
+scrollLayout;
+
+columnLayout -adj 1;// -bgc .2 .4 .8; 
+
+frameLayout -l List -cl 0 -cll 0 -bs "etchedOut";
+
+int $columnCount = sqrt ($poseFilesCount);
+rowColumnLayout -nc $columnCount;
+
+for ($poseFile in $poseFilesList) {
+  string $pose = poseFile2PoseFunc ($poseFile);
+  string $imagePath = imageExistsFunc ($pose, $g_path);
+  print ($imagePath + "\n");
+
+  columnLayout;
+    symbolCheckBox -i $imagePath ($pose + "CbControl"); 
+    text -l $pose -fn "boldLabelFont";
+  setParent..;
+
+}
+setParent..;
+setParent..;
+
+
+frameLayout -l Generation -cl 0 -cll 0 -bs "etchedOut";
+columnLayout -adj 1;
+  checkBox -l "Prepare Pose" preparePoseControl;
+  button -l "Generate Pose" -bgc 1 .15 .15 -c "global string $g_path; generatePoseFunc $g_path";
+setParent..;
+setParent..;
+
+
+showWindow listWin;
+
+} // end func <listPosesFunc>
+
+
+
+
+global proc string imageExistsFunc (string $pose, string $path) {
+
+string $imagesList[] = `getFileList -fld $path -fs "*.bmp"`;
+string $image;
+for ($image in $imagesList) {
+  if ( ($pose + ".bmp") == $image )
+    return ($path + $image);
+  else
+    return ($path + "empty.bmp");
+}
+
+}
+  
+
+
+
+
+
+
+global proc generatePoseFunc (string $path) {
+
+
+global string $poseFilesList[];
+//int $poseFilesListCount = `size $poseFilesList`;
+string $poseFile;
+
+int $counter = 0;
+
+for ($poseFile in $poseFilesList) {
+
+  string $pose = poseFile2PoseFunc ($poseFile);
+  if (`checkBox -q -v ($pose + "CbControl")`)
+    $counter++;
+
+}
+
+int $onCount = $counter;
+print ($onCount);
+
+
+if (`checkBox -q -v preparePoseControl`) 
+  switch ($onCount) {
+
+  case 1:
+    string $posesList[] = getPoseFunc ($path);
+
+    select -r $posesList;
+
+//    prepareSceneFunc;
+    set1dControlFunc;
+    prepare1dControlFunc;
+    delete $posesList;
+    select -r ($posesList[0] + "_1dControl");
+  break;
+  
+  case 2:
+    string $posesList[] = getPoseFunc ($path);
+
+    select -r $posesList;
+
+//    prepareSceneFunc;
+    set2dControlFunc;
+    prepare2dControlFunc;
+    delete $posesList;
+    
+    string $poseApart[];
+    tokenize $posesList[0] "_" $poseApart;
+    select -r ($poseApart[0] + "_" + $posesList[1] + "_2dControl");
+//    select -r ($posesList[0] + "_2dControl");
+//    select -r ($posesList[1] + "_2dControl");
+  break;
+
+  }
+    
+  
+
+
+else
+  getPoseFunc $path;     
+
+
+} // end func <generatePoseFunc>
+
+
+
+
+
+
+global proc string[] getPoseFunc (string $path) {
+
+global string $poseFilesList[];
+string $poseFile;
+
+string $cbOnList[];
+int $counter = 0;
+string $pose;
+
+//select -cl;
+for ($poseFile in $poseFilesList) {
+  
+  $pose = poseFile2PoseFunc ($poseFile);
+  if (`checkBox -q -v ($pose + "CbControl")`) {
+    $cbOnList[$counter] = $pose;
+    $counter++;
+    file -import -type "mayaBinary" -pr ($path + $pose + ".mb");
+
+  } 
+
+}
+
+return $cbOnList;
+
+} // end func <getPoseFunc>
+
+    
+
+
+
+
+
+
+global proc string poseFile2PoseFunc (string $poseFile) {
+
+string $poseFileApart[];
+tokenize $poseFile "." $poseFileApart;
+
+string $pose = $poseFileApart[0];
+return $pose;
+
+}
+
+//getAnimatorTools
+
+

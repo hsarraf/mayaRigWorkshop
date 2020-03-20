@@ -1,0 +1,149 @@
+global proc dr_generateFunc() {
+
+global string $mc_objList[];
+select -r $mc_objList;
+
+
+	if (`size $mc_objList` == 0) {
+		confirmDialog -t "Note" -m "The list is empty!\nSet the list and attemp again." -b "Ok"; 
+		error "generating failed!";
+	}
+	else {  
+		
+
+	string $warning = `confirmDialog -t "A Warning" -m "Be sure to set the correct list!\nUnless othewise, delete the list and set again.\nContinue?" 
+		                           -b "Yes" -b "No" -db "Yes" -cb "No" -ds "No"`;
+	if ($warning == "Yes") {
+  
+select $mc_objList;		
+int $objCount = `size $mc_objList`;
+
+float $smoothIndex = 0;
+
+int $objCounter;
+int $timeCounter;
+
+int $startTime = `intFieldGrp -q -v1 startTimeControl`;  
+int $endTime = `intFieldGrp -q -v1 endTimeControl`;  
+
+float $progressBarLength = $endTime - $startTime;
+//print ($progressBarLength);
+progressBar -e -max $progressBarLength progressBarControl;
+
+float $timeDelay = `floatFieldGrp -q -v1 timeDelayControl`;
+float $smoothValue = `floatFieldGrp -q -v1 smoothValueControl`;
+
+
+select -d $mc_objList[0];
+
+for ($timeCounter = $startTime ; $timeCounter <= $endTime ; $timeCounter++) {
+  
+  currentTime $timeCounter;
+  $smoothIndex += $smoothValue;
+
+
+  for ($objCounter = 0 ; $objCounter < $objCount - 1 ; $objCounter++) {
+
+    float $zPos = `getAttr -t ($timeCounter - $timeDelay - $smoothIndex) ($mc_objList[$objCounter] + ".tz")`;
+    float $yPos = `getAttr -t ($timeCounter - $timeDelay - $smoothIndex) ($mc_objList[$objCounter] + ".ty")`;
+    float $xPos = `getAttr -t ($timeCounter - $timeDelay - $smoothIndex) ($mc_objList[$objCounter] + ".tx")`;
+
+    setAttr ($mc_objList[$objCounter + 1] + ".tz") $zPos;
+    setAttr ($mc_objList[$objCounter + 1] + ".ty") $yPos;
+    setAttr ($mc_objList[$objCounter + 1] + ".tx") $xPos;
+
+  }
+    setKeyframe;
+
+    progressBar -e -pr $timeCounter progressBarControl;
+
+} 
+
+	} // end if <warning>
+	else
+		error "global proccess failed!";
+	
+  } // end else <note>
+  
+progressBar -e -pr 0 progressBarControl;
+} // end func <dr_generateFunc>
+
+
+global proc setListFunc() {
+	
+	global string $mc_objList[];
+    $mc_objList = `ls -sl -tr`;
+	select -cl;
+	
+}
+
+
+global proc deleteListFunc() {
+	
+    global string $mc_objList[];
+	string $warning = `confirmDialog -t "A Warning" -m "Are you sure to delete the list?" 
+		                           -b "Yes" -b "No" -db "Yes" -cb "No" -ds "No"`;
+	if ($warning == "Yes") {
+	  select -cl;
+	  $mc_objList = `ls -sl`;
+	}
+	else 
+		error "Deleting the list failed!";
+	
+}
+
+
+global proc freezeListFunc() {
+	
+    global string $mc_objList[];
+	if (`size $mc_objList` == 0) {
+		confirmDialog -t "Note" -m "The list is empty!\nSet the list and attemp again." -b "Ok"; 
+		error "Freezing the list failed!";
+	}
+	else {                          
+	  makeIdentity -apply true -t 1 -r 1 -s 1 -n 0 $mc_objList;
+	  select -cl;
+	}
+
+}
+
+
+global proc deleteKeysFunc() {
+	
+    global string $mc_objList[];
+	if (`size $mc_objList` == 0) {
+		confirmDialog -t "Note" -m "The list is empty!\nSet the list and attemp again." -b "Ok"; 
+		error "deleting the keys failed!";
+	}
+	else {                          
+	string $warning = `confirmDialog -t "A Warning" -m "Are you sure to delete the keys?" 
+		                           -b "Yes" -b "No" -db "Yes" -cb "No" -ds "No"`;
+	if ($warning == "Yes") {
+
+         progressBar -e -s `progressBar -q -max progressBarControl` progressBarControl;
+         
+	  select $mc_objList;
+	  select -d $mc_objList[0];
+	  int $counter;
+	  int $startTime = `intFieldGrp -q -v1 startTimeControl`;
+	  int $endTime = `intFieldGrp -q -v1 endTimeControl`;
+	  for ($counter = $endTime ; $counter >= $startTime ; $counter--) {
+		  currentTime $counter;
+		  timeSliderClearKey;
+
+                progressBar -e -pr ($counter) progressBarControl;
+	  }
+
+progressBar -e -pr 0 progressBarControl;
+
+}
+          
+        else 
+          error "Deleting the kes failed!";
+
+
+	  select -cl;
+
+	} // end else <note>
+
+} // end func <deleteKeysFunc>

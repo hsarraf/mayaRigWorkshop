@@ -1,0 +1,158 @@
+//---------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------------------------------------------------------------------//
+//	SCRIPT:	Animator Tools.mel	
+//	AUTHOR:	Hadi Sarraf   _   <didarvfx co.>
+//
+//	DATE:	       7 / May / 2006   _    1385 / 2 / 17 	
+//
+//     USAGE:        Accessing every tools the animator needed.
+//
+//                   This script is divided to four parts :
+//                       1. Selection Sketch : You can select every icon determined for you 
+//                                               on the character through a sketch not the scene.
+//                          . This selection mode can be sensitive to lunch the related window included 
+//                              the properties for the selected icon. 
+//                              This mode can be switched on or off. 
+//                       2. Motion Connections : This is a strategy to simplify the character setup system 
+//                                                 by dividing the `rig` and `skin` tasks to two hierarchies.
+//                       3. Quick Access : Accessing every animator needs quickly.
+//                       4. Face Tools : Descriped later. 
+//                                                   
+//---------------------------------------------------------------------------------------------------------------//
+//---------------------------------------------------------------------------------------------------------------//     
+
+
+
+
+
+
+string $ss_iconImagesPath = "C:/Documents and Settings/All Users/Documents/sctipts_IconImages/selectionSketchImages/";
+
+if (`window -ex animatorToolsWin`)
+  deleteUI animatorToolsWin;
+
+window -t "Animator Tools" animatorToolsWin;
+scrollLayout;
+
+columnLayout -adj 1;
+
+textFieldGrp -l "Character Code" -tx 1 -adj 1 -cal 1 left ss_characterCodeControl;
+text -l "Interactive Selection" -align left -fn boldLabelFont;
+button -l Off -bgc .7 .7 .7 -c "scriptJob -ka;";
+button -l On -bgc .85 .85 .85 -c "scriptJob -ka; scriptJob -ct SomethingSelected UIsLuncherFunc;";
+
+
+  frameLayout -l "Selection Sketch" -cll 1 -bs "in";
+    rowColumnLayout -nc 5 -cw 1 60 -cw 2 60 -cw 3 60 -cw 4 60 -cw 5 60;
+
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "head.bmp") -c "selectFunc M_head";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "R_arm.bmp") -c "selectFunc R_arm";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "upper.bmp") -c "selectFunc M_upper";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "L_arm.bmp") -c "selectFunc L_arm";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp"); 
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "lower.bmp") -c "selectFunc M_lower";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "R_leg.bmp") -c "selectFunc R_leg";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "L_leg.bmp") -c "selectFunc L_leg";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+
+    setParent..;
+  setParent..;
+
+
+  frameLayout -l "Quick Access" -cll 1 -cl 0 -bs "in";
+    columnLayout -adj 1;
+
+    rowLayout -nc 4 -cw 1 50 -cw 2 50 -cw 3 50 -cw 4 50;
+
+      toolCollection;
+      toolButton -t "selectSuperContext" -ti1 "selectSuperContext" "aselect.xpm";
+      toolButton -t "moveSuperContext" -ti1 "moveSuperContext" "move_M.xpm";
+      toolButton -t "RotateSuperContext" -ti1 "RotateSuperContext" "Rotate_M.xpm";
+      toolButton -t "scaleSuperContext" -ti1 "scaleSuperContext" "scale_M.xpm";
+
+    setParent..;
+
+      separator -h 10;
+
+      button -l "Graph Editor" -bgc 1 .8 .6 -c GraphEditor;   
+      button -l "Dope Sheet" -bgc 1 .8 .6 -c DopeSheetEditor;       
+
+//      button -l "Outliner" -bgc .9 .7 .5 -c OutlinerWindow;  
+//      button -l "Hypergraph" -bgc .9 .7 .5 -c HypergraphWindow;  
+
+    setParent..; 
+  setParent..;
+
+
+frameLayout -l "Motion Connections" -cll 1 -cl 1;
+
+  columnLayout -adj 1;
+
+    radioButtonGrp -nrb 2 -l "which mode:" -la2 "connection" "disconnection" -adj 1 -cal 1 left -bgc .8 .6 .4
+                                                            -on1 "global int $mc_mod = 1;print($mc_mod);"
+                                                            -of1 "global int $mc_mod = 2;print($mc_mod);";
+
+   text -l "";
+
+  rowColumnLayout -nc 5 -cw 1 60 -cw 2 60 -cw 3 60 -cw 4 60 -cw 5 60;
+
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "head.bmp") -c "mc_generateFunc M_neck0_J";
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "R_arm.bmp") -c "mc_generateFunc R_arm0_J";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "upper.bmp") -c "mc_generateFunc M_spine0_J";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "L_arm.bmp") -c "mc_generateFunc L_arm0_J";
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "root.bmp") -c "mc_generateFunc M_root_J";
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 30 -i ($ss_iconImagesPath + "empty.bmp");
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "R_leg.bmp") -c "mc_generateFunc R_leg0_J";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "lower.bmp") -c "mc_generateFunc M_pelvis_J";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "L_leg.bmp") -c "mc_generateFunc L_leg0_J";
+      symbolButton -w 40 -h 70 -i ($ss_iconImagesPath + "empty.bmp");
+
+
+  setParent..;
+setParent..;
+setParent..;
+
+
+
+frameLayout -l "Face Tools" -cll 1 -cl 1;
+
+columnLayout -adj 1;
+
+button -l "1d" -bgc .6 .6 1 -c controlWin_1d;
+button -l "2d" -bgc 1 .6 .6 -c controlWin_2d;
+
+separator -h 20;
+
+textFieldGrp -adj 1 -cc lunchListFunc lunchListControl;
+text -l "Write a pose name or a number represented for\nGhool  ->  1\nEjdeha  ->  2\nKhosro  ->  3";
+
+
+setParent..;
+
+
+
+setParent..;
+
+
+showWindow animatorToolsWin;
